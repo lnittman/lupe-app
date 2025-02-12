@@ -1,6 +1,6 @@
-import type { ApiResponse } from '@/types/api';
-import { API_ENDPOINTS } from './endpoints';
-import type { SeparateResponse } from '@/types/api';
+import useSWR from 'swr';
+import type { ApiResponse, SeparateResponse } from '@/types/api';
+import { API_ENDPOINTS } from '@/lib/api/endpoints';
 
 // API error handling
 export class ApiError extends Error {
@@ -10,33 +10,60 @@ export class ApiError extends Error {
   }
 }
 
-async function throwIfResNotOk(res: Response) {
+// Base fetcher for JSON endpoints
+const fetcher = async (url: string) => {
+  const res = await fetch(url);
   if (!res.ok) {
-    const text = (await res.text()) || res.statusText;
+    const text = await res.text();
     throw new ApiError(res.status, text);
   }
-}
+  return res.json();
+};
 
-// Enhanced API request function with better typing
-export async function apiRequest<T = any>(
-  method: string,
-  url: string,
-  data?: unknown,
-): Promise<ApiResponse<T>> {
-  const res = await fetch(url, {
-    method,
-    headers: data ? { "Content-Type": "application/json" } : {},
-    body: data ? JSON.stringify(data) : undefined,
-    credentials: "include",
+// File upload fetcher
+const uploadFetcher = async ([url, file]: [string, File]) => {
+  const formData = new FormData();
+  formData.append('file', file);
+
+  const response = await fetch(url, {
+    method: 'POST',
+    body: formData,
   });
 
-  await throwIfResNotOk(res);
-  return res.json();
+  if (!response.ok) {
+    const text = await response.text();
+    throw new ApiError(response.status, text);
+  }
+
+  return response.json();
+};
+
+// Hook for checking API health
+export function useHealthCheck() {
+  return useSWR<ApiResponse<{ status: string }>>(
+    API_ENDPOINTS.HEALTH,
+    fetcher,
+    { refreshInterval: 30000 } // Check every 30 seconds
+  );
 }
 
-export async function separateAudioFile(file: File): Promise<SeparateResponse> {
+// Hook for processing stem separation
+export function useStemSeparation(file: File | null) {
+  return useSWR<SeparateResponse>(
+    file ? [API_ENDPOINTS.SEPARATE, file] : null,
+    uploadFetcher,
+    {
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+      shouldRetryOnError: false
+    }
+  );
+}
+
+// Legacy function for compatibility
+export async function processStemSeparation(file: File): Promise<SeparateResponse> {
   const formData = new FormData();
-  formData.append('audio', file);
+  formData.append('file', file);
 
   const response = await fetch(API_ENDPOINTS.SEPARATE, {
     method: 'POST',
@@ -44,23 +71,9 @@ export async function separateAudioFile(file: File): Promise<SeparateResponse> {
   });
 
   if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.error || 'Separation failed');
+    const text = await response.text();
+    throw new ApiError(response.status, text);
   }
 
-  return response.json();
-}
-
-export async function processStemSeparation(file: File): Promise<SeparateResponse> {
-  const formData = new FormData();
-  formData.append('audio', file);
-
-  const response = await fetch(API_ENDPOINTS.SEPARATE, {
-    method: 'POST',
-    body: formData,
-    credentials: 'include'
-  });
-
-  await throwIfResNotOk(response);
   return response.json();
 } 

@@ -1,7 +1,7 @@
 import { format } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
 
-import { useAudioStore } from "@/lib/store";
+import { useAudioStore } from "@/store";
 import { Action, SystemActionType, UserActionType } from "@/types/action";
 
 function getActionMessage(action: Action): string {
@@ -54,7 +54,7 @@ export function ActionLog() {
             </div>
 
             <div className="flex items-center gap-2">
-              <span className="uppercase text-black font-bold">
+              <span className="uppercase text-black font-mono">
                 {Object.values(SystemActionType).includes(action.type as SystemActionType) ? 'SYSTEM' : action.type}
               </span>
 

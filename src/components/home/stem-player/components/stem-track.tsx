@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { Timer, ChevronLeft, ChevronRight, ArrowLeft, ArrowRight } from "lucide-react";
 import { memo } from "react";
 
-import { useAudioStore } from "@/lib/store";
+import { useAudioStore } from "@/store";
 import { StemType, Stem } from "@/types/audio";
 
 const LOOP_LENGTHS = [4, 8, 16, 32] as const;
@@ -94,7 +94,7 @@ const StemTrack = memo(({ type }: StemTrackProps): JSX.Element => {
           </div>
 
           {/* Grid visualization */}
-          <div className="grid grid-cols-32 gap-0.5 flex-1">
+          <div className="flex gap-0.5 flex-1">
             {Array.from({ length: 32 }).map((_, i) => {
               const absolutePosition = i + (gridViewOffset * 32);
               const beatInLoop = absolutePosition >= (loopStart || 0) && 
@@ -103,7 +103,7 @@ const StemTrack = memo(({ type }: StemTrackProps): JSX.Element => {
               return (
                 <motion.div
                   key={i}
-                  className={`h-4 ${
+                  className={`h-4 flex-1 ${
                     beatInLoop 
                       ? 'bg-black/20'
                       : 'bg-black/5'

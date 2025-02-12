@@ -1,13 +1,16 @@
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
-import "./globals.css"
+import { serverMono } from "@/styles/fonts"
+
 import { Providers } from "@/components/providers"
+
+import "@/styles/globals.css"
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" })
 
 export const metadata: Metadata = {
-  title: "Lupe - Audio Source Separation",
-  description: "Separate vocals, drums, bass, and other instruments from your music using AI",
+  title: "lupe",
+  description: "audio stem separation",
   icons: {
     icon: "/favicon.ico",
   },
@@ -19,9 +22,9 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" className={`${serverMono.variable}`}>
       <head />
-      <body className={inter.className}>
+      <body className={`${inter.className} font-mono`}>
         <Providers>{children}</Providers>
       </body>
     </html>

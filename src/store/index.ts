@@ -1,53 +1,18 @@
 import { create } from 'zustand'
 import { subscribeWithSelector } from 'zustand/middleware'
 
-import { Action, SystemActionType, UserActionType } from '@/types/action'
-import { AudioEngine } from '@/lib/audio/engine'
-import type { SplitProgress, Stem, Stems, StemType } from '@/types/audio'
-import { detectBPM } from '@/lib/audio/utils'
-import { base64ToAudioBuffer } from '@/lib/audio/utils'
 import { processStemSeparation } from '@/lib/api/client'
-
-interface AudioStore {
-  // Core State
-  engine: AudioEngine | null
-  isInitialized: boolean
-  bpm: number
-  playbackRate: number
-  isPlaying: boolean
-  stems: Record<StemType, Stem> | null
-  selectedStem: StemType | null
-  actions: Action[]
-  gridViewOffset: number
-  SplitProgress: SplitProgress | null
-  file: File | null
-  isLoading: boolean
-
-  // Actions
-  initializeEngine: () => Promise<void>
-  setBPM: (bpm: number) => void
-  setPlaybackRate: (rate: number) => void
-  togglePlayback: () => Promise<void>
-  updateStem: (name: StemType, updates: Partial<Stem>) => void
-  selectStem: (name: StemType) => void
-  addAction: (action: Action) => void
-  setGridViewOffset: (offset: number) => void
-  setIsLoading: (isLoading: boolean) => void
-  setSplitProgress: (progress: SplitProgress | null) => void
-  setFile: (file: File) => void
-  setStems: (stems: Stems) => void
-  processAudioFile: (file: File) => Promise<void>
-  dispose: () => void
-}
+import { AudioEngine } from '@/lib/audio/engine'
+import { base64ToAudioBuffer, detectBPM } from '@/lib/audio/utils'
+import { Action, SystemActionType, UserActionType } from '@/types/action'
+import type { SplitProgress, Stem, Stems, StemType } from '@/types/audio'
+import { AudioStore } from '@/types/store'
 
 export const useAudioStore = create<AudioStore>()(
   subscribeWithSelector((set, get) => {
-    // Create engine instance
-    const engine = new AudioEngine();
-
     return {
       // Initial state
-      engine,
+      engine: null,
       isInitialized: false,
       bpm: 120,
       playbackRate: 1,
@@ -62,10 +27,11 @@ export const useAudioStore = create<AudioStore>()(
 
       // Actions
       initializeEngine: async () => {
-        const { engine } = get();
-        if (!engine || get().isInitialized) return;
+        if (get().isInitialized) return;
 
         try {
+          // Create engine instance only when initialized
+          const engine = new AudioEngine();
           await engine.initialize();
           
           // Set up event listeners
@@ -77,7 +43,7 @@ export const useAudioStore = create<AudioStore>()(
           engine.on('playbackRate', (rate: number) => set({ playbackRate: rate }));
           engine.on('playing', (isPlaying: boolean) => set({ isPlaying }));
 
-          set({ isInitialized: true });
+          set({ engine, isInitialized: true });
         } catch (error) {
           console.error('Failed to initialize audio engine:', error);
           throw error;
@@ -100,7 +66,9 @@ export const useAudioStore = create<AudioStore>()(
       setBPM: (bpm) => {
         const { engine } = get();
         if (engine) {
+          // Let the engine handle the action logging
           engine.setBPM(bpm);
+          // Only update the store state
           set({ bpm });
         }
       },
@@ -176,15 +144,7 @@ export const useAudioStore = create<AudioStore>()(
           });
         }
 
-        if (updates.loopStart !== undefined || updates.loopLength !== undefined) {
-          addAction({
-            ...baseActionProps,
-            type: UserActionType.StemLoopChanged,
-            loopStart: updatedStem.loopStart || 0,
-            loopLength: updatedStem.loopLength || 32
-          });
-        }
-
+        // Remove loop change logging from here since engine handles it
         if (updates.isReversed !== undefined) {
           addAction({
             ...baseActionProps,
@@ -320,6 +280,8 @@ export const useAudioStore = create<AudioStore>()(
         } catch (error) {
           set({ isLoading: false, SplitProgress: null });
           throw error;
+        } finally {
+          set({ isLoading: false });
         }
       },
     };

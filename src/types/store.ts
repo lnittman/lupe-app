@@ -5,6 +5,7 @@ import { AudioEngine } from "@/lib/audio/engine"
 export interface AudioStore {
   // Core State
   engine: AudioEngine | null
+  isInitialized: boolean
   bpm: number
   playbackRate: number
   isPlaying: boolean
@@ -17,7 +18,7 @@ export interface AudioStore {
   isLoading: boolean
 
   // Actions
-  setEngine: (engine: AudioEngine) => void
+  initializeEngine: () => Promise<void>
   setBPM: (bpm: number) => void
   setPlaybackRate: (rate: number) => void
   togglePlayback: () => Promise<void>
@@ -30,4 +31,5 @@ export interface AudioStore {
   setFile: (file: File) => void
   setStems: (stems: Stems) => void
   processAudioFile: (file: File) => Promise<void>
+  dispose: () => void
 }

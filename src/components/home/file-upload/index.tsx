@@ -1,30 +1,53 @@
 'use client';
 
 import { motion } from "framer-motion";
-import { Plus } from "lucide-react";
 import { useRef } from "react";
 
 import { useToast } from "@/hooks/use-toast";
-import { useAudioStore } from "@/lib/store";
+import { useAudioStore } from "@/store";
 
 import { SplitLoader } from "./components/split-loader";
 
+const SquarePlus = ({ className }: { className?: string }) => (
+  <svg 
+    width="24" 
+    height="24" 
+    viewBox="0 0 24 24" 
+    stroke="currentColor" 
+    strokeWidth="1"
+    className={className}
+  >
+    <path d="M12 5V19" strokeLinecap="square" />
+    <path d="M5 12H19" strokeLinecap="square" />
+  </svg>
+);
+
 export function FileUpload() {
   const { toast } = useToast(); 
-
-  const { isLoading, processAudioFile, setIsLoading, setSplitProgress } = useAudioStore();
-
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const { 
+    isLoading, 
+    processAudioFile, 
+    setIsLoading, 
+    setSplitProgress, 
+    initializeEngine 
+  } = useAudioStore();
 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
-
     const file = e.dataTransfer.files[0];
     if (file) handleFile(file);
   };
 
   const handleFile = async (file: File) => {
     try {
+      // Set loading state before starting
+      setIsLoading(true);
+      setSplitProgress(null);
+
+      // Initialize audio engine first
+      await initializeEngine();
       await processAudioFile(file);
     } catch (error) {
       console.error('Processing error:', error);
@@ -78,7 +101,7 @@ export function FileUpload() {
           >
             <div className="text-center space-y-6">
               <div className="w-16 h-16 mx-auto border border-black flex items-center justify-center [border-radius:0]">
-                <Plus className="w-8 h-8" />
+                <SquarePlus />
               </div>
 
               <p className="text-sm text-neutral-500 tracking-tight">

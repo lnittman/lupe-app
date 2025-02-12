@@ -1,9 +1,9 @@
 'use client';
 
-import { ChevronUp, ChevronDown, Play, Pause } from 'lucide-react';
+import { ChevronUp, ChevronDown, Play, Pause, Square } from 'lucide-react';
 import { memo, useCallback, useRef, useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
-import { useAudioStore } from '@/lib/store';
+import { useAudioStore } from '@/store';
 import { UserActionType } from '@/types/action';
 
 export const PlayerControls = memo(() => {
@@ -23,18 +23,20 @@ export const PlayerControls = memo(() => {
   const [lastTapTime, setLastTapTime] = useState<number>(0);
   const tapTimesRef = useRef<number[]>([]);
 
-  // Handle spacebar shortcut
+  // Handle keyboard shortcuts
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
-      if (e.code === 'Space' && engine && isInitialized) {
+      if (!engine || !isInitialized) return;
+
+      if (e.code === 'Space') {
         e.preventDefault();
-        togglePlayback();
+        engine.startPlayback();
       }
     };
 
     window.addEventListener('keydown', handleKeyPress);
     return () => window.removeEventListener('keydown', handleKeyPress);
-  }, [togglePlayback, engine, isInitialized]);
+  }, [engine, isInitialized]);
 
   const handleBpmChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setTempoBpm(e.target.value);
@@ -44,12 +46,6 @@ export const PlayerControls = memo(() => {
     const newBpm = parseInt(tempoBpm);
     if (!isNaN(newBpm) && newBpm > 0 && newBpm < 1000) {
       setBPM(newBpm);
-      addAction({
-        type: UserActionType.BPMChanged,
-        id: crypto.randomUUID(),
-        timestamp: Date.now(),
-        bpm: newBpm
-      });
     } else {
       setTempoBpm(bpm.toString());
     }
@@ -78,17 +74,11 @@ export const PlayerControls = memo(() => {
       if (newBpm > 0 && newBpm < 1000) {
         setBPM(newBpm);
         setTempoBpm(newBpm.toString());
-        addAction({
-          type: UserActionType.BPMChanged,
-          id: crypto.randomUUID(),
-          timestamp: Date.now(),
-          bpm: newBpm
-        });
       }
     }
     
     setLastTapTime(now);
-  }, [lastTapTime, setBPM, addAction]);
+  }, [lastTapTime, setBPM]);
 
   const handlePlaybackRateChange = () => {
     const PLAYBACK_RATES = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 2];
@@ -97,42 +87,43 @@ export const PlayerControls = memo(() => {
     const newRate = PLAYBACK_RATES[nextIndex];
     
     setPlaybackRate(newRate);
-    addAction({
-      type: UserActionType.PlaybackRateChanged,
-      id: crypto.randomUUID(),
-      timestamp: Date.now(),
-      rate: newRate
-    });
   };
 
   const handleBpmAdjust = (delta: number) => {
     const newBPM = Math.min(999, Math.max(1, bpm + delta));
     setBPM(newBPM);
-    addAction({
-      type: UserActionType.BPMChanged,
-      id: crypto.randomUUID(),
-      timestamp: Date.now(),
-      bpm: newBPM
-    });
+    setTempoBpm(newBPM.toString());
   };
 
   return (
     <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-black">
       <div className="p-4 flex justify-between items-center">
         <div className="flex items-center gap-4">
-          <button
-            onClick={togglePlayback}
-            className="w-12 h-12 bg-black text-white flex items-center justify-center [border-radius:0] transition-colors hover:bg-black/90"
-          >
-            {isPlaying ? (
-              <Pause className="w-6 h-6" />
-            ) : (
+          <div className="flex gap-2">
+            <button
+              onClick={() => {
+                if (isPlaying && engine) {
+                  engine.stopPlayback();
+                }
+              }}
+              className="w-12 h-12 bg-black text-white flex items-center justify-center [border-radius:0] transition-colors hover:bg-black/90"
+            >
+              <Square className="w-5 h-5 [stroke-linecap:square] [stroke-linejoin:miter]" />
+            </button>
+            <button
+              onClick={() => {
+                if (engine) {
+                  engine.startPlayback();
+                }
+              }}
+              className="w-12 h-12 bg-black text-white flex items-center justify-center [border-radius:0] transition-colors hover:bg-black/90"
+            >
               <Play className="w-6 h-6" />
-            )}
-          </button>
+            </button>
+          </div>
           
-          <span className="text-xs text-neutral-500">
-            press <kbd className="px-2 py-0.5 bg-neutral-100 rounded">space</kbd> to play/pause
+          <span className="text-xs font-mono text-neutral-500">
+            press <kbd className="px-2 py-0.5 bg-neutral-100 rounded font-mono">space</kbd> to play
           </span>
         </div>
 
@@ -140,7 +131,7 @@ export const PlayerControls = memo(() => {
           {/* Playback Rate */}
           <button 
             onClick={handlePlaybackRateChange}
-            className="text-sm font-mono w-20 text-center"
+            className="w-20 h-8 bg-black text-white text-sm font-mono hover:bg-black/90 transition-colors"
           >
             {playbackRate}x
           </button>
@@ -154,20 +145,20 @@ export const PlayerControls = memo(() => {
                 onChange={handleBpmChange}
                 onBlur={handleBpmSubmit}
                 onKeyDown={e => e.key === 'Enter' && handleBpmSubmit()}
-                className="w-20 h-8 text-sm font-mono pr-6"
+                className="w-20 h-8 text-sm font-mono pr-6 [border-radius:0]"
                 min={1}
                 max={999}
               />
               <div className="absolute right-1 flex flex-col">
                 <button 
                   onClick={() => handleBpmAdjust(1)}
-                  className="h-4 flex items-center justify-center hover:text-neutral-500"
+                  className="h-4 flex items-center justify-center hover:text-neutral-500 transition-colors"
                 >
                   <ChevronUp className="w-3 h-3" />
                 </button>
                 <button 
                   onClick={() => handleBpmAdjust(-1)}
-                  className="h-4 flex items-center justify-center hover:text-neutral-500"
+                  className="h-4 flex items-center justify-center hover:text-neutral-500 transition-colors"
                 >
                   <ChevronDown className="w-3 h-3" />
                 </button>

@@ -1,6 +1,5 @@
 export const API_ENDPOINTS = {
   SEPARATE: '/api/separate',
-  TRACKS: '/api/tracks',
   HEALTH: '/api/health'
 } as const;
 

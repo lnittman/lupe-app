@@ -1,8 +1,8 @@
 import { motion } from "framer-motion";
-import { memo } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { memo } from "react";
 
-import { useAudioStore } from '@/lib/store';
+import { useAudioStore } from '@/store';
 import { StemType } from "@/types/audio";
 
 import { PlayerControls } from "./components/player-controls";

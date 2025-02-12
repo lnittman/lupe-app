@@ -1,9 +1,11 @@
+'use client';
+
 import { AnimatePresence } from "framer-motion";
 
 import { ActionLog } from "@/components/home/action-log";
 import { FileUpload } from "@/components/home/file-upload";
 import { StemPlayer } from "@/components/home/stem-player";
-import { useAudioStore } from "@/lib/store";
+import { useAudioStore } from "@/store";
 
 export default function HomePage() {
   const { file, isLoading, stems } = useAudioStore();

@@ -3,7 +3,7 @@
 import { motion } from "framer-motion";
 import { useState, useEffect, useRef } from "react";
 
-import { useAudioStore } from "@/lib/store";
+import { useAudioStore } from "@/store";
 import { StemType } from "@/types/audio";
 
 export function SplitLoader() {

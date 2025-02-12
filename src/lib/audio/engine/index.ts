@@ -9,11 +9,11 @@ import { GridClock } from './grid-clock';
 
 export class AudioEngine extends EventEmitter {
   private bpm = 120;
-  private context: AudioContext;
-  private gridClock: GridClock;
+  private context!: AudioContext;
+  private gridClock!: GridClock;
   private initialized = false;
-  private limiter: Tone.Limiter;
-  private mainOutput: Tone.Volume;
+  private limiter!: Tone.Limiter;
+  private mainOutput!: Tone.Volume;
   private playbackRate = 1;
   private stems: Map<string, {
     player: Tone.Player;
@@ -24,23 +24,24 @@ export class AudioEngine extends EventEmitter {
   constructor() {
     super();
 
-    this.context = new AudioContext();
-    
-    // Create main output chain
-    this.limiter = new Tone.Limiter(-6);
-    this.mainOutput = new Tone.Volume(0);
-    this.mainOutput.chain(this.limiter).toDestination();
+    // Initialize properties to avoid TypeScript errors
+    if (typeof window !== 'undefined') {
+      this.context = new AudioContext();
+      this.limiter = new Tone.Limiter(-6);
+      this.mainOutput = new Tone.Volume(0);
+      this.mainOutput.chain(this.limiter).toDestination();
 
-    this.initializeTransport();
-    this.setupEventListeners();
+      this.initializeTransport();
+      this.setupEventListeners();
 
-    this.gridClock = new GridClock(this.transport, this.transport.bpm.value);
-    
-    this.emit('action', {
-      type: SystemActionType.EngineInitialized,
-      id: crypto.randomUUID(),
-      timestamp: Date.now()
-    });
+      this.gridClock = new GridClock(this.transport, this.transport.bpm.value);
+      
+      this.emit('action', {
+        type: SystemActionType.EngineInitialized,
+        id: crypto.randomUUID(),
+        timestamp: Date.now()
+      });
+    }
   }
 
   public async addStem(stem: Stem): Promise<void> {
@@ -94,52 +95,62 @@ export class AudioEngine extends EventEmitter {
     }
   }
 
-  public async togglePlayback(): Promise<void> {
+  public async startPlayback(): Promise<void> {
     if (Tone.getContext().state !== 'running') {
       await Tone.start();
       await this.context.resume();
     }
 
-    if (this.transport.state === 'started') {
-      // Emit playing state first
-      this.emit('playing', false);
-      
-      this.transport.pause();
-      this.stems.forEach(({ player }) => {
-        player.stop();
-      });
-      
-      this.emit('action', {
-        type: UserActionType.PlaybackStopped,
-        id: crypto.randomUUID(),
-        timestamp: Date.now()
-      });
-    } else {
-      // Emit playing state first
-      this.emit('playing', true);
-      
-      const startTime = this.transport.now() + 0.1; // Small delay for scheduling
-      
-      // Schedule all stems to start together
-      this.stems.forEach(({ player }) => {
-        const loopDuration = Number(player.loopEnd) - Number(player.loopStart);
-        const loopPosition = player.loopStart;
-        
-        // Ensure player is in loop mode
-        player.loop = true;
-        
-        // Schedule the start precisely
-        player.start(startTime, loopPosition);
-      });
+    // Stop any currently playing stems first
+    this.stems.forEach(({ player }) => {
+      player.stop();
+    });
+    this.transport.stop();
 
-      // Start transport slightly after players to ensure sync
-      this.transport.start(startTime);
-      
-      this.emit('action', {
-        type: UserActionType.PlaybackStarted,
-        id: crypto.randomUUID(),
-        timestamp: Date.now()
-      });
+    // Emit playing state
+    this.emit('playing', true);
+    
+    const startTime = this.transport.now() + 0.1; // Small delay for scheduling
+    
+    // Start all stems from their loop start positions
+    this.stems.forEach(({ player }) => {
+      player.loop = true;
+      player.start(startTime, player.loopStart);
+    });
+
+    // Start transport
+    this.transport.start(startTime);
+    
+    this.emit('action', {
+      type: UserActionType.PlaybackStarted,
+      id: crypto.randomUUID(),
+      timestamp: Date.now()
+    });
+  }
+
+  public stopPlayback(): void {
+    // Emit playing state first
+    this.emit('playing', false);
+    
+    this.transport.pause();
+    this.stems.forEach(({ player }) => {
+      player.stop();
+    });
+    
+    this.emit('action', {
+      type: UserActionType.PlaybackStopped,
+      id: crypto.randomUUID(),
+      timestamp: Date.now()
+    });
+  }
+
+  // Keep this for backward compatibility but mark as deprecated
+  /** @deprecated Use startPlayback() and stopPlayback() instead */
+  public async togglePlayback(): Promise<void> {
+    if (this.transport.state === 'started') {
+      this.stopPlayback();
+    } else {
+      await this.startPlayback();
     }
   }
 
