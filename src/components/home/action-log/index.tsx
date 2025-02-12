@@ -1,0 +1,68 @@
+import { format } from "date-fns";
+import { motion, AnimatePresence } from "framer-motion";
+
+import { useAudioStore } from "@/lib/store";
+import { Action, SystemActionType, UserActionType } from "@/types/action";
+
+function getActionMessage(action: Action): string {
+  switch (action.type) {
+    case SystemActionType.BPMChanged:
+      return `BPM set to ${action.bpm}`;
+    case SystemActionType.StemAdded:
+      return `Added ${action.stem} stem`;
+    case SystemActionType.StemSplit:
+      return `Splitting stems for ${action.filename}`;
+    case UserActionType.BPMChanged:
+      return `BPM set to ${action.bpm}`;
+    case UserActionType.PlaybackStarted:
+      return 'Playback started';
+    case UserActionType.PlaybackStopped:
+      return 'Playback stopped';
+    case UserActionType.PlaybackRateChanged:
+      return `Playback rate set to ${action.rate}x`;
+    case UserActionType.StemMuted:
+      return `Muted ${action.stem}`;
+    case UserActionType.StemUnmuted:
+      return `Unmuted ${action.stem}`;
+    case UserActionType.StemVolumeChanged:
+      return `${action.stem} volume set to ${Math.round(action.volume * 100)}%`;
+    case UserActionType.StemLoopChanged:
+      return `${action.stem} loop changed to ${action.loopStart}:${action.loopLength}`;
+    case UserActionType.StemReversed:
+      return `${action.stem} playback ${action.reversed ? 'reversed' : 'normal'}`;
+    default:
+      return '';
+  }
+}
+
+export function ActionLog() {
+  const actions = useAudioStore(state => state.actions);
+
+  return (
+    <div className="fixed h-52 overflow-y-auto bg-white p-4 font-mono text-xs">
+      <AnimatePresence mode="popLayout">
+        {actions.map((action) => (
+          <motion.div
+            key={action.id}
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 20 }}
+            className="mb-2"
+          >
+            <div className="text-neutral-500">
+              {format(action.timestamp, 'HH:mm:ss.SSS')}
+            </div>
+
+            <div className="flex items-center gap-2">
+              <span className="uppercase text-black font-bold">
+                {Object.values(SystemActionType).includes(action.type as SystemActionType) ? 'SYSTEM' : action.type}
+              </span>
+
+              <span className="text-neutral-600">{getActionMessage(action)}</span>
+            </div>
+          </motion.div>
+        ))}
+      </AnimatePresence>
+    </div>
+  );
+}
