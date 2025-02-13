@@ -1,5 +1,4 @@
-import useSWR from 'swr';
-import type { ApiResponse, SeparateResponse } from '@/types/api';
+import type { SplitResponse } from '@/types/api';
 import { API_ENDPOINTS } from '@/lib/api/endpoints';
 
 // API error handling
@@ -10,23 +9,22 @@ export class ApiError extends Error {
   }
 }
 
-// Base fetcher for JSON endpoints
-const fetcher = async (url: string) => {
-  const res = await fetch(url);
-  if (!res.ok) {
-    const text = await res.text();
-    throw new ApiError(res.status, text);
-  }
-  return res.json();
-};
-
-// File upload fetcher
-const uploadFetcher = async ([url, file]: [string, File]) => {
+export async function processStemSplit(file: File): Promise<SplitResponse> {
   const formData = new FormData();
   formData.append('file', file);
 
+  const url = API_ENDPOINTS.SEPARATE;
+
+  console.log('Sending request to:', {
+    url,
+    fileSize: file.size,
+    fileType: file.type,
+    fileName: file.name
+  });
+
+  // Create AbortController for timeout
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+  const timeoutId = setTimeout(() => controller.abort(), 60000); // Increased to 60 seconds
 
   try {
     const response = await fetch(url, {
@@ -40,72 +38,11 @@ const uploadFetcher = async ([url, file]: [string, File]) => {
 
     clearTimeout(timeoutId);
 
-    if (!response.ok) {
-      const text = await response.text();
-      throw new ApiError(response.status, text || 'Failed to upload file');
-    }
-
-    const contentType = response.headers.get('content-type');
-    if (!contentType || !contentType.includes('application/json')) {
-      throw new ApiError(500, 'Invalid response format from server');
-    }
-
-    return response.json();
-  } catch (error) {
-    if (error instanceof ApiError) throw error;
-    if (error instanceof Error && error.name === 'AbortError') {
-      throw new ApiError(408, 'Request timeout');
-    }
-    throw new ApiError(500, error instanceof Error ? error.message : 'Failed to process file');
-  } finally {
-    clearTimeout(timeoutId);
-  }
-};
-
-// Hook for checking API health
-export function useHealthCheck() {
-  return useSWR<ApiResponse<{ status: string }>>(
-    API_ENDPOINTS.HEALTH,
-    fetcher,
-    { refreshInterval: 30000 } // Check every 30 seconds
-  );
-}
-
-// Hook for processing stem separation
-export function useStemSeparation(file: File | null) {
-  return useSWR<SeparateResponse>(
-    file ? [API_ENDPOINTS.SEPARATE, file] : null,
-    uploadFetcher,
-    {
-      revalidateOnFocus: false,
-      revalidateOnReconnect: false,
-      shouldRetryOnError: false
-    }
-  );
-}
-
-// Legacy function for compatibility
-export async function processStemSeparation(file: File): Promise<SeparateResponse> {
-  const formData = new FormData();
-  formData.append('file', file);
-
-  console.log('Sending request to:', API_ENDPOINTS.SEPARATE);
-
-  // Create AbortController for timeout
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
-
-  try {
-    const response = await fetch(API_ENDPOINTS.SEPARATE, {
-      method: 'POST',
-      body: formData,
-      signal: controller.signal,
-      headers: {
-        'Accept': 'application/json',
-      }
+    console.log('Response received:', {
+      status: response.status,
+      statusText: response.statusText,
+      headers: Object.fromEntries(response.headers.entries())
     });
-
-    clearTimeout(timeoutId);
 
     if (!response.ok) {
       const text = await response.text();
@@ -120,6 +57,7 @@ export async function processStemSeparation(file: File): Promise<SeparateRespons
 
     const contentType = response.headers.get('content-type');
     if (!contentType || !contentType.includes('application/json')) {
+      console.error('Invalid content type:', contentType);
       throw new ApiError(500, 'Invalid response format from server');
     }
 
@@ -127,13 +65,18 @@ export async function processStemSeparation(file: File): Promise<SeparateRespons
     console.log('API Response:', data);
     return data;
   } catch (error) {
+    console.error('Request failed:', {
+      error,
+      type: error instanceof Error ? error.constructor.name : typeof error,
+      message: error instanceof Error ? error.message : String(error)
+    });
+
     if (error instanceof ApiError) throw error;
     if (error instanceof Error && error.name === 'AbortError') {
-      throw new ApiError(408, 'Request timeout');
+      throw new ApiError(408, 'Request timeout - the server took too long to respond');
     }
-    console.error('API Request Failed:', error);
     throw new ApiError(500, error instanceof Error ? error.message : 'Failed to process file');
   } finally {
     clearTimeout(timeoutId);
   }
-} 
+}

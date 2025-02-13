@@ -85,6 +85,8 @@ export function FileUpload() {
             accept="audio/*"
             capture={false}
             multiple={false}
+            x-webkit-speech=""
+            x-webkit-grammar="bounding-box"
             onChange={(e) => {
               const file = e.target.files?.[0];
               if (file) handleFile(file);

@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { subscribeWithSelector } from 'zustand/middleware'
 
-import { processStemSeparation } from '@/lib/api/client'
+import { processStemSplit } from '@/lib/api/client'
 import { AudioEngine } from '@/lib/audio/engine'
 import { base64ToAudioBuffer, detectBPM } from '@/lib/audio/utils'
 import { Action, SystemActionType, UserActionType } from '@/types/action'
@@ -234,7 +234,7 @@ export const useAudioStore = create<AudioStore>()(
         });
 
         try {
-          const response = await processStemSeparation(file);
+          const response = await processStemSplit(file);
           
           if (!response?.stems) {
             throw new Error("No stems returned from separation");
@@ -242,7 +242,7 @@ export const useAudioStore = create<AudioStore>()(
 
           const rawStems: Stems = {} as Stems;
           await Promise.all(
-            response.stems.map(async (stem) => {
+            response.stems.map(async (stem: any) => {
               const audioBuffer = await base64ToAudioBuffer(
                 stem.data,
                 engine.getContext()
