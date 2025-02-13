@@ -109,7 +109,8 @@ const StemTrack = memo(({ type }: StemTrackProps) => {
             >
               {type.padEnd(6, ' ')}
             </button>
-            <button
+
+            {/*<button
               onClick={(e) => {
                 e.stopPropagation();
                 toggleDirection();
@@ -121,7 +122,7 @@ const StemTrack = memo(({ type }: StemTrackProps) => {
               ) : (
                 <ArrowRight className="w-3 h-3" />
               )}
-            </button>
+            </button>*/}
           </div>
 
           {/* Grid visualization */}
