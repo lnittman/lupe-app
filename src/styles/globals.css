@@ -24,6 +24,23 @@
     --input: 240 5.9% 90%;
     --ring: 240 5.9% 10%;
     --radius: 0.5rem;
+
+    /* Add chart colors */
+    --chart-1: 240 5.9% 10%;
+    --chart-2: 240 4.8% 95.9%;
+    --chart-3: 240 3.8% 46.1%;
+    --chart-4: 0 84.2% 60.2%;
+    --chart-5: 240 5.9% 90%;
+
+    /* Add sidebar colors */
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 240 10% 3.9%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 240 5.9% 90%;
+    --sidebar-ring: 240 5.9% 10%;
   }
  
   .dark {
@@ -46,6 +63,23 @@
     --border: 240 3.7% 15.9%;
     --input: 240 3.7% 15.9%;
     --ring: 240 4.9% 83.9%;
+
+    /* Add dark mode chart colors */
+    --chart-1: 0 0% 98%;
+    --chart-2: 240 3.7% 15.9%;
+    --chart-3: 240 5% 64.9%;
+    --chart-4: 0 62.8% 30.6%;
+    --chart-5: 240 3.7% 15.9%;
+
+    /* Add dark mode sidebar colors */
+    --sidebar-background: 240 10% 3.9%;
+    --sidebar-foreground: 0 0% 98%;
+    --sidebar-primary: 0 0% 98%;
+    --sidebar-primary-foreground: 240 5.9% 10%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 0 0% 98%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 240 4.9% 83.9%;
   }
 }
  
@@ -55,5 +89,11 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+@layer components {
+  .center {
+    @apply flex items-center justify-center;
   }
 } 

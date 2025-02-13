@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
-import { Timer, ChevronLeft, ChevronRight, ArrowLeft, ArrowRight } from "lucide-react";
-import { memo } from "react";
+import { ChevronLeft, ChevronRight, ArrowLeft, ArrowRight } from "lucide-react";
+import { memo, useEffect, useState } from "react";
 
 import { useAudioStore } from "@/store";
 import { StemType, Stem } from "@/types/audio";
@@ -12,18 +12,51 @@ interface StemTrackProps {
   type: StemType;
 }
 
-const StemTrack = memo(({ type }: StemTrackProps): JSX.Element => {
+const StemTrack = memo(({ type }: StemTrackProps) => {
   const { 
+    engine,
     gridViewOffset,
     isPlaying,
+    playbackRate,
     stems,
     selectStem,
     setGridViewOffset,
     updateStem
   } = useAudioStore();
 
-  const stem: Stem | undefined = stems?.[type];
+  const [currentGridPosition, setCurrentGridPosition] = useState<number>(0);
 
+  // Update current grid position during playback
+  useEffect(() => {
+    if (!isPlaying || !engine) return;
+
+    const interval = setInterval(() => {
+      const position = engine.getTransportPosition();
+      // Convert position from "bars:quarters:sixteenths" format to beats
+      const [bars, quarters, sixteenths] = position.split(':').map(Number);
+      const totalBeats = (bars * 4) + quarters + (sixteenths / 4);
+      
+      // Convert beats to grid position (each grid is 1/4 bar = 1 beat)
+      let gridPos = Math.floor(totalBeats);
+      
+      // Adjust for loop boundaries
+      const stem = stems?.[type];
+      if (stem) {
+        const loopStart = stem.loopStart || 0;
+        const loopLength = stem.loopLength || 32;
+        
+        // Calculate relative position within loop
+        const relativePos = ((gridPos - loopStart) % loopLength + loopLength) % loopLength;
+        gridPos = loopStart + relativePos;
+      }
+
+      setCurrentGridPosition(gridPos);
+    }, 16); // Update at 60fps
+
+    return () => clearInterval(interval);
+  }, [isPlaying, engine, stems, type]);
+
+  const stem: Stem | undefined = stems?.[type];
   const { isReversed, isMuted, loopLength = 32, loopStart = 0 } = stem || {};
 
   const toggleMute = () => {
@@ -99,6 +132,7 @@ const StemTrack = memo(({ type }: StemTrackProps): JSX.Element => {
               const absolutePosition = i + (gridViewOffset * 32);
               const beatInLoop = absolutePosition >= (loopStart || 0) && 
                                 absolutePosition < ((loopStart || 0) + (loopLength || 32));
+              const isCurrentPosition = absolutePosition === currentGridPosition;
               
               return (
                 <motion.div
@@ -109,10 +143,10 @@ const StemTrack = memo(({ type }: StemTrackProps): JSX.Element => {
                       : 'bg-black/5'
                   } ${isMuted ? 'opacity-50' : ''}`}
                   animate={{
-                    opacity: isPlaying && absolutePosition === (loopStart || 0) ? 1 : undefined,
-                    scale: isPlaying && absolutePosition === (loopStart || 0) ? 1.1 : 1
+                    opacity: isPlaying && isCurrentPosition ? 1 : undefined,
+                    scale: isPlaying && isCurrentPosition ? 1.1 : 1
                   }}
-                  transition={{ duration: 0.1 }}
+                  transition={{ duration: 0.05 }}
                 />
               );
             })}
@@ -126,7 +160,6 @@ const StemTrack = memo(({ type }: StemTrackProps): JSX.Element => {
             }}
             className="flex items-center gap-1 px-2 py-1 text-[10px] hover:opacity-70"
           >
-            <Timer className="w-3 h-3" />
             <span className="w-4 text-center">{loopLength}</span>
           </button>
         </div>

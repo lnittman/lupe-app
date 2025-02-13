@@ -8,14 +8,14 @@ import { StemPlayer } from "@/components/home/stem-player";
 import { useAudioStore } from "@/store";
 
 export default function HomePage() {
-  const { file, isLoading, stems } = useAudioStore();
+  const { stems, isLoading } = useAudioStore();
 
   return (
     <div className="min-h-screen w-full flex flex-col">
       <ActionLog />
 
       <AnimatePresence mode="sync">
-        {!file && <FileUpload />}
+        {!stems && <FileUpload />}
         {stems && !isLoading && <StemPlayer />}
       </AnimatePresence>
     </div>

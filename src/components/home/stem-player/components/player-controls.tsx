@@ -1,10 +1,10 @@
 'use client';
 
-import { ChevronUp, ChevronDown, Play, Pause, Square } from 'lucide-react';
+import { ChevronUp, ChevronDown, Play, Square } from 'lucide-react';
 import { memo, useCallback, useRef, useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { useAudioStore } from '@/store';
-import { UserActionType } from '@/types/action';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 export const PlayerControls = memo(() => {
   const { 
@@ -22,9 +22,12 @@ export const PlayerControls = memo(() => {
   const [tempoBpm, setTempoBpm] = useState<string>(bpm.toString());
   const [lastTapTime, setLastTapTime] = useState<number>(0);
   const tapTimesRef = useRef<number[]>([]);
+  const isMobile = useIsMobile();
 
   // Handle keyboard shortcuts
   useEffect(() => {
+    if (isMobile) return; // Don't add keyboard listeners on mobile
+    
     const handleKeyPress = (e: KeyboardEvent) => {
       if (!engine || !isInitialized) return;
 
@@ -36,7 +39,7 @@ export const PlayerControls = memo(() => {
 
     window.addEventListener('keydown', handleKeyPress);
     return () => window.removeEventListener('keydown', handleKeyPress);
-  }, [engine, isInitialized]);
+  }, [engine, isInitialized, isMobile]);
 
   const handleBpmChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setTempoBpm(e.target.value);
@@ -95,84 +98,86 @@ export const PlayerControls = memo(() => {
     setTempoBpm(newBPM.toString());
   };
 
+  const buttonHeight = isMobile ? "h-8" : "h-10";
+  const buttonWidth = isMobile ? "w-24" : "w-32";
+  const fontSize = isMobile ? "text-sm" : "text-base";
+
   return (
     <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-black">
-      <div className="p-4 flex justify-between items-center">
-        <div className="flex items-center gap-4">
-          <div className="flex gap-2">
-            <button
-              onClick={() => {
-                if (isPlaying && engine) {
-                  engine.stopPlayback();
-                }
-              }}
-              className="w-12 h-12 bg-black text-white flex items-center justify-center [border-radius:0] transition-colors hover:bg-black/90"
-            >
-              <Square className="w-5 h-5 [stroke-linecap:square] [stroke-linejoin:miter]" />
-            </button>
-            <button
-              onClick={() => {
-                if (engine) {
-                  engine.startPlayback();
-                }
-              }}
-              className="w-12 h-12 bg-black text-white flex items-center justify-center [border-radius:0] transition-colors hover:bg-black/90"
-            >
-              <Play className="w-6 h-6" />
-            </button>
-          </div>
-          
-          <span className="text-xs font-mono text-neutral-500">
-            press <kbd className="px-2 py-0.5 bg-neutral-100 rounded font-mono">space</kbd> to play
-          </span>
+      <div className="p-4 flex justify-between">
+        {/* Left corner - Play/Stop */}
+        <div className="flex flex-col gap-2">
+          <button
+            onClick={() => {
+              if (engine) {
+                engine.startPlayback();
+              }
+            }}
+            className={`${buttonHeight} ${buttonWidth} bg-black text-white flex items-center justify-center [border-radius:0] transition-colors hover:bg-black/90 font-mono`}
+          >
+            play
+          </button>
+          <button
+            onClick={() => {
+              if (isPlaying && engine) {
+                engine.stopPlayback();
+              }
+            }}
+            className={`${buttonHeight} ${buttonWidth} bg-black text-white flex items-center justify-center [border-radius:0] transition-colors hover:bg-black/90 font-mono`}
+          >
+            stop
+          </button>
         </div>
 
-        <div className="flex items-center gap-4">
-          {/* Playback Rate */}
-          <button 
-            onClick={handlePlaybackRateChange}
-            className="w-20 h-8 bg-black text-white text-sm font-mono hover:bg-black/90 transition-colors"
-          >
-            {playbackRate}x
-          </button>
-
-          {/* BPM Input */}
-          <div className="flex items-center">
-            <div className="relative flex items-center">
-              <Input
-                type="text"
-                value={tempoBpm}
-                onChange={handleBpmChange}
-                onBlur={handleBpmSubmit}
-                onKeyDown={e => e.key === 'Enter' && handleBpmSubmit()}
-                className="w-20 h-8 text-sm font-mono pr-6 [border-radius:0]"
-                min={1}
-                max={999}
-              />
-              <div className="absolute right-1 flex flex-col">
-                <button 
-                  onClick={() => handleBpmAdjust(1)}
-                  className="h-4 flex items-center justify-center hover:text-neutral-500 transition-colors"
-                >
-                  <ChevronUp className="w-3 h-3" />
-                </button>
-                <button 
-                  onClick={() => handleBpmAdjust(-1)}
-                  className="h-4 flex items-center justify-center hover:text-neutral-500 transition-colors"
-                >
-                  <ChevronDown className="w-3 h-3" />
-                </button>
-              </div>
+        {/* Right corner controls */}
+        <div className="flex gap-2">
+          {/* BPM controls */}
+          <div className="flex flex-col gap-2">
+            <Input
+              type="text"
+              value={tempoBpm}
+              onChange={handleBpmChange}
+              onBlur={handleBpmSubmit}
+              onKeyDown={e => {
+                e.preventDefault();
+                if (e.key === 'Enter') handleBpmSubmit();
+              }}
+              readOnly={true}
+              className={`${buttonHeight} ${buttonWidth} ${fontSize} font-mono text-center [border-radius:0]`}
+              min={1}
+              max={999}
+            />
+            <div className={`flex ${buttonHeight}`}>
+              <button 
+                onClick={() => handleBpmAdjust(1)}
+                className="flex-1 h-full flex items-center justify-center hover:bg-black/5 transition-colors border border-black"
+              >
+                <ChevronUp className={isMobile ? "w-3 h-3" : "w-4 h-4"} />
+              </button>
+              <button 
+                onClick={() => handleBpmAdjust(-1)}
+                className="flex-1 h-full flex items-center justify-center hover:bg-black/5 transition-colors border-t border-r border-b border-black"
+              >
+                <ChevronDown className={isMobile ? "w-3 h-3" : "w-4 h-4"} />
+              </button>
             </div>
           </div>
 
-          {/* Tap Tempo Button */}
-          <button
-            onClick={handleTapTempo}
-            className="w-20 h-8 bg-black text-white text-sm font-mono hover:bg-black/90 transition-colors"
-          >
-            TAP
-          </button>
+          {/* Tap/Rate controls */}
+          <div className="flex flex-col gap-2">
+            <button
+              onClick={handleTapTempo}
+              className={`${buttonHeight} ${buttonWidth} bg-black text-white ${fontSize} font-mono hover:bg-black/90 transition-colors`}
+            >
+              tap
+            </button>
+            <button 
+              onClick={handlePlaybackRateChange}
+              className={`${buttonHeight} ${buttonWidth} bg-black text-white ${fontSize} font-mono hover:bg-black/90 transition-colors`}
+            >
+              {playbackRate}x
+            </button>
+          </div>
         </div>
       </div>
     </div>

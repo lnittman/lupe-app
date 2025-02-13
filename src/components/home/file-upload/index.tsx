@@ -105,7 +105,7 @@ export function FileUpload() {
               </div>
 
               <p className="text-sm text-neutral-500 tracking-tight">
-                tap or drop audio to begin
+                tap or drop audio file
               </p>
             </div>
           </motion.div>
