@@ -29,8 +29,8 @@ export function SplitLoader() {
     }, 500);
 
     const progressSteps = Array.from({ length: 90 }, () => {
-      const baseStep = 0.005;
-      const randomVariation = Math.random() * 0.005 - 0.0025;
+      const baseStep = 0.01;
+      const randomVariation = Math.random() * 0.005;
 
       return baseStep + randomVariation;
     });
@@ -43,7 +43,7 @@ export function SplitLoader() {
         const nextProgress = prev + progressSteps[currentStep++];
         return Math.min(0.9, nextProgress);
       });
-    }, 200);
+    }, 100);
 
     return () => {
       if (dotsIntervalRef.current) window.clearInterval(dotsIntervalRef.current);
@@ -109,7 +109,7 @@ export function SplitLoader() {
             ))}
           </div>
 
-          <div className="text-sm text-neutral-500 inline-flex items-center justify-center">
+          <div className="text-sm text-neutral-500 font-mono inline-flex items-center justify-center">
             splitting stems
 
             <span className="inline-flex items-center ml-[1px]">

@@ -89,15 +89,51 @@ export async function processStemSeparation(file: File): Promise<SeparateRespons
   const formData = new FormData();
   formData.append('file', file);
 
-  const response = await fetch(API_ENDPOINTS.SEPARATE, {
-    method: 'POST',
-    body: formData
-  });
+  console.log('Sending request to:', API_ENDPOINTS.SEPARATE);
 
-  if (!response.ok) {
-    const text = await response.text();
-    throw new ApiError(response.status, text);
+  // Create AbortController for timeout
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+
+  try {
+    const response = await fetch(API_ENDPOINTS.SEPARATE, {
+      method: 'POST',
+      body: formData,
+      signal: controller.signal,
+      headers: {
+        'Accept': 'application/json',
+      }
+    });
+
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      const text = await response.text();
+      console.error('API Error:', {
+        status: response.status,
+        statusText: response.statusText,
+        text,
+        headers: Object.fromEntries(response.headers.entries())
+      });
+      throw new ApiError(response.status, text || 'Failed to upload file');
+    }
+
+    const contentType = response.headers.get('content-type');
+    if (!contentType || !contentType.includes('application/json')) {
+      throw new ApiError(500, 'Invalid response format from server');
+    }
+
+    const data = await response.json();
+    console.log('API Response:', data);
+    return data;
+  } catch (error) {
+    if (error instanceof ApiError) throw error;
+    if (error instanceof Error && error.name === 'AbortError') {
+      throw new ApiError(408, 'Request timeout');
+    }
+    console.error('API Request Failed:', error);
+    throw new ApiError(500, error instanceof Error ? error.message : 'Failed to process file');
+  } finally {
+    clearTimeout(timeoutId);
   }
-
-  return response.json();
 } 
