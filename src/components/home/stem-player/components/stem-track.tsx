@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { ChevronLeft, ChevronRight, ArrowLeft, ArrowRight } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { memo, useEffect, useState } from "react";
 
 import { useAudioStore } from "@/store";
@@ -61,9 +61,11 @@ const StemTrack = memo(({ type }: StemTrackProps) => {
     updateStem(type, { isMuted: !isMuted });
   };
 
+  /*
   const toggleDirection = () => {
     updateStem(type, { isReversed: !isReversed });
   };
+  */
 
   const moveLoop = (direction: -1 | 1) => {
     const newStart = Math.max(0, (loopStart || 0) + direction);
