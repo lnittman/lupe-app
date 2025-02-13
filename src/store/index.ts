@@ -242,7 +242,7 @@ export const useAudioStore = create<AudioStore>()(
 
           const rawStems: Stems = {} as Stems;
           await Promise.all(
-            response.stems.map(async (stem: any) => {
+            response.stems.map(async (stem) => {
               const audioBuffer = await base64ToAudioBuffer(
                 stem.data,
                 engine.getContext()
