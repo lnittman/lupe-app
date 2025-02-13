@@ -83,6 +83,8 @@ export function FileUpload() {
             type="file"
             className="hidden"
             accept="audio/*"
+            capture={false}
+            multiple={false}
             onChange={(e) => {
               const file = e.target.files?.[0];
               if (file) handleFile(file);
