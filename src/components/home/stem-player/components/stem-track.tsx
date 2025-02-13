@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { memo, useEffect, useState } from "react";
+import { cn } from "@/lib/utils";
 
 import { useAudioStore } from "@/store";
 import { StemType, Stem } from "@/types/audio";
@@ -34,7 +35,7 @@ const StemTrack = memo(({ type }: StemTrackProps) => {
       const [bars, quarters, sixteenths] = position.split(':').map(Number);
       const totalBeats = (bars * 4) + quarters + (sixteenths / 4);
       
-      // Convert beats to grid position (each grid is 1/4 bar = 1 beat)
+      // Convert beats to grid position (each grid square is 1/4 bar = 1 beat)
       let gridPos = Math.floor(totalBeats);
       
       // Adjust for loop boundaries
@@ -47,7 +48,7 @@ const StemTrack = memo(({ type }: StemTrackProps) => {
         const relativePos = ((gridPos - loopStart) % loopLength + loopLength) % loopLength;
         gridPos = loopStart + relativePos;
       }
-
+      
       setCurrentGridPosition(gridPos);
     }, 16); // Update at 60fps
 
@@ -131,18 +132,18 @@ const StemTrack = memo(({ type }: StemTrackProps) => {
           <div className="flex gap-0.5 flex-1">
             {Array.from({ length: 32 }).map((_, i) => {
               const absolutePosition = i + (gridViewOffset * 32);
-              const beatInLoop = absolutePosition >= (loopStart || 0) && 
-                                absolutePosition < ((loopStart || 0) + (loopLength || 32));
+              const beatInLoop = absolutePosition >= loopStart && 
+                                absolutePosition < (loopStart + loopLength);
               const isCurrentPosition = absolutePosition === currentGridPosition;
               
               return (
                 <motion.div
                   key={i}
-                  className={`h-4 flex-1 ${
-                    beatInLoop 
-                      ? 'bg-black/20'
-                      : 'bg-black/5'
-                  } ${isMuted ? 'opacity-50' : ''}`}
+                  className={cn(
+                    "h-4 flex-1",
+                    beatInLoop ? "bg-black/20" : "bg-black/5",
+                    isMuted && "opacity-50"
+                  )}
                   animate={{
                     opacity: isPlaying && isCurrentPosition ? 1 : undefined,
                     scale: isPlaying && isCurrentPosition ? 1.1 : 1

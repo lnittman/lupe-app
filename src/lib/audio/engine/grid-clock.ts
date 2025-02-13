@@ -42,8 +42,9 @@ export class GridClock {
     startBar: number;
     endBar: number;
   } {
-    const startTime = this.gridToTime(startGrid);
-    const endTime = this.gridToTime(startGrid + lengthInSquares);
+    // Convert grid positions to time
+    const startTime = startGrid * (this.barDuration / 4); // Each grid is 1/4 bar
+    const endTime = (startGrid + lengthInSquares) * (this.barDuration / 4);
     
     return {
       startTime,
