@@ -39,7 +39,7 @@ export const useAudioStore = create<AudioStore>()(
             get().addAction(action);
           });
 
-          engine.on('bpm', (bpm: number) => set({ bpm }));
+          engine.on('bpmChanged', (bpm: number) => set({ bpm }));
           engine.on('playbackRate', (rate: number) => set({ playbackRate: rate }));
           engine.on('playing', (isPlaying: boolean) => set({ isPlaying }));
 

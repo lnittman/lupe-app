@@ -54,7 +54,7 @@ export const StemPlayer = memo(() => {
           </div>
 
           <div className="flex flex-col gap-2">
-            {Object.entries(stems).map(([name, stem]) => (
+            {Object.keys(stems).map((name) => (
               <StemTrack key={name} type={name as StemType} />
             ))}
           </div>

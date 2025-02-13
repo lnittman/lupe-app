@@ -44,48 +44,48 @@ export class AudioEngine extends EventEmitter {
     }
   }
 
-  public async addStem(stem: Stem): Promise<void> {
+  public async addStem({ buffer, name, volume, isMuted, loopStart, loopLength }: Stem): Promise<void> {
     try {
-      if (!stem.buffer) {
+      if (!buffer) {
         throw new Error('Cannot add stem without audio buffer');
       }
 
       // Create a new buffer from the AudioBuffer
-      const buffer = new Tone.ToneAudioBuffer(stem.buffer);
+      const toneBuffer = new Tone.ToneAudioBuffer(buffer);
       
       // Wait for buffer to load using the loaded getter
-      if (!buffer.loaded) {
+      if (!toneBuffer.loaded) {
         await new Promise<void>((resolve) => {
-          buffer.onload = () => resolve();
+          toneBuffer.onload = () => resolve();
         });
       }
 
       // Calculate time-based loop points from grid positions
-      const { startTime, endTime } = this.gridClock.calculateLoopPoints(stem.loopStart, stem.loopLength);
+      const { startTime, endTime } = this.gridClock.calculateLoopPoints(loopStart, loopLength);
 
       const player = new Tone.Player({
         loop: true,
         loopStart: startTime,
         loopEnd: endTime,
         autostart: false,
-        mute: stem.isMuted,
+        mute: isMuted,
         playbackRate: this.playbackRate // Set initial playback rate
       });
 
       // Set the buffer directly
-      player.buffer = buffer;
+      player.buffer = toneBuffer;
 
-      const volume = new Tone.Volume(
-        stem.volume === 0 ? -Infinity : 20 * Math.log10(stem.volume)
+      const volumeNode = new Tone.Volume(
+        volume === 0 ? -Infinity : 20 * Math.log10(volume)
       );
       
-      player.chain(volume, this.mainOutput);
+      player.chain(volumeNode, this.mainOutput);
 
-      this.stems.set(stem.name, { player, volume });
+      this.stems.set(name, { player, volume: volumeNode });
 
       this.emit('action', {
         type: SystemActionType.StemAdded,
-        stem: stem.name as StemType,
+        stem: name as StemType,
         id: crypto.randomUUID(),
         timestamp: Date.now()
       });
@@ -205,8 +205,7 @@ export class AudioEngine extends EventEmitter {
     this.gridClock.updateBPM(bpm);
 
     // Recalculate and update loop points for all stems
-    this.stems.forEach((stem, name) => {
-      const player = stem.player;
+    this.stems.forEach(({ player }) => {
       const currentLoopStart = this.gridClock.timeToGrid(Number(player.loopStart));
       const currentLoopEnd = this.gridClock.timeToGrid(Number(player.loopEnd));
       const loopLength = currentLoopEnd - currentLoopStart;
@@ -260,7 +259,7 @@ export class AudioEngine extends EventEmitter {
     const stem = this.stems.get(name);
     if (!stem) return;
 
-    const { player, volume } = stem;
+    const { volume } = stem;
 
     if (config.isMuted !== undefined) {
       // Use volume for muting instead of player.mute to maintain sync
@@ -303,8 +302,8 @@ export class AudioEngine extends EventEmitter {
     }
   }
 
-  public updateStemLoop(name: string, loopStart: number, loopLength: number): void {
-    const stem = this.stems.get(name);
+  public updateStemLoop(stemName: string, loopStart: number, loopLength: number): void {
+    const stem = this.stems.get(stemName);
     if (!stem) return;
 
     const { player } = stem;
@@ -350,7 +349,7 @@ export class AudioEngine extends EventEmitter {
     }
 
     this.emit('loopChanged', {
-      name,
+      name: stemName,
       loopStart,
       loopLength,
       playerState: player.state
@@ -359,21 +358,7 @@ export class AudioEngine extends EventEmitter {
 
   // Private methods
 
-  private setupEventListeners(): void {
-    this.on('loopChanged', (event: { name: string; loopStart: number; loopLength: number; playerState: string }) => {
-      this.logAction('Loop Changed', event);
-    });
-
-    this.on('bpmChanged', (bpm: number) => {
-      this.logAction('BPM Changed', { bpm });
-    });
-
-    this.on('stateLogged', (state: { name: string; loopStart: number; loopLength: number; playerState: string }) => {
-      this.logAction('State Logged', state);
-    });
-  }
-
-  private logAction(type: string, details: Record<string, any>): void {
+  private logAction(type: string, details: Record<string, unknown>): void {
     const action = {
       type,
       timestamp: new Date().toISOString(),
@@ -381,6 +366,20 @@ export class AudioEngine extends EventEmitter {
     };
 
     this.emit('actionLogged', action);
+  }
+
+  private setupEventListeners(): void {
+    this.on('loopChanged', (event) => {
+      this.logAction('Loop Changed', event);
+    });
+
+    this.on('bpmChanged', (bpm) => {
+      this.logAction('BPM Changed', { bpm });
+    });
+
+    this.on('stateLogged', (event) => {
+      this.logAction('State Logged', event);
+    });
   }
 
   private initializeTransport() {

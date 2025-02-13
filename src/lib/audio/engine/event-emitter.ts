@@ -1,23 +1,23 @@
-import type { EventCallback } from "@/types/audio";
+import type { EventCallback, EventMap } from "@/types/audio";
 
 export class EventEmitter {
-  private events: { [key: string]: EventCallback[] } = {};
+  private events: { [K in keyof EventMap]?: EventCallback<EventMap[K]>[] } = {};
 
-  on(event: string, callback: EventCallback): void {
+  on<K extends keyof EventMap>(event: K, callback: EventCallback<EventMap[K]>): void {
     if (!this.events[event]) {
       this.events[event] = [];
     }
-    this.events[event].push(callback);
+    this.events[event]?.push(callback);
   }
 
-  off(event: string, callback: EventCallback): void {
+  off<K extends keyof EventMap>(event: K, callback: EventCallback<EventMap[K]>): void {
     if (!this.events[event]) return;
-    this.events[event] = this.events[event].filter(cb => cb !== callback);
+    this.events[event] = this.events[event]?.filter(cb => cb !== callback);
   }
 
-  emit(event: string, ...args: any[]): void {
+  emit<K extends keyof EventMap>(event: K, data: EventMap[K]): void {
     if (!this.events[event]) return;
-    this.events[event].forEach(callback => callback(...args));
+    this.events[event]?.forEach(callback => callback(data));
   }
 
   removeAllListeners(): void {

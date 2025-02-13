@@ -17,10 +17,8 @@ const StemTrack = memo(({ type }: StemTrackProps) => {
     engine,
     gridViewOffset,
     isPlaying,
-    playbackRate,
     stems,
     selectStem,
-    setGridViewOffset,
     updateStem
   } = useAudioStore();
 
@@ -175,5 +173,7 @@ const StemTrack = memo(({ type }: StemTrackProps) => {
     </div>
   );
 });
+
+StemTrack.displayName = 'StemTrack';
 
 export default StemTrack;

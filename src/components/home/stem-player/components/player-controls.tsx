@@ -1,6 +1,6 @@
 'use client';
 
-import { ChevronUp, ChevronDown, Play, Square } from 'lucide-react';
+import { ChevronUp, ChevronDown } from 'lucide-react';
 import { memo, useCallback, useRef, useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { useAudioStore } from '@/store';
@@ -13,10 +13,8 @@ export const PlayerControls = memo(() => {
     bpm,
     isPlaying,
     playbackRate,
-    addAction,
     setPlaybackRate,
     setBPM,
-    togglePlayback
   } = useAudioStore();
 
   const [tempoBpm, setTempoBpm] = useState<string>(bpm.toString());

@@ -28,7 +28,7 @@ export function SplitLoader() {
       setDots(prev => prev.length >= 3 ? '' : prev + '.');
     }, 500);
 
-    const progressSteps = Array.from({ length: 90 }, (_, i) => {
+    const progressSteps = Array.from({ length: 90 }, () => {
       const baseStep = 0.005;
       const randomVariation = Math.random() * 0.005 - 0.0025;
 
@@ -69,7 +69,7 @@ export function SplitLoader() {
 
       return () => clearTimeout(timer);
     }
-  }, [stems]);
+  }, [stems, setIsLoading]);
 
   const progress = SplitProgress?.progress ?? fakeProgress;
   const progressPercent = Math.round(progress * 100);

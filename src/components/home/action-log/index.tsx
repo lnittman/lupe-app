@@ -1,5 +1,5 @@
 import { format } from "date-fns";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 
 import { useAudioStore } from "@/store";
 import { Action, SystemActionType, UserActionType } from "@/types/action";
