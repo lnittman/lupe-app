@@ -55,7 +55,7 @@ const StemTrack = memo(({ type }: StemTrackProps) => {
   }, [isPlaying, engine, stems, type]);
 
   const stem: Stem | undefined = stems?.[type];
-  const { isReversed, isMuted, loopLength = 32, loopStart = 0 } = stem || {};
+  const { isMuted, loopLength = 32, loopStart = 0 } = stem || {};
 
   const toggleMute = () => {
     updateStem(type, { isMuted: !isMuted });
