@@ -53,10 +53,10 @@ const uploadFetcher = async ([url, file]: [string, File]) => {
     return response.json();
   } catch (error) {
     if (error instanceof ApiError) throw error;
-    if (error.name === 'AbortError') {
+    if (error instanceof Error && error.name === 'AbortError') {
       throw new ApiError(408, 'Request timeout');
     }
-    throw new ApiError(500, error.message || 'Failed to process file');
+    throw new ApiError(500, error instanceof Error ? error.message : 'Failed to process file');
   } finally {
     clearTimeout(timeoutId);
   }
