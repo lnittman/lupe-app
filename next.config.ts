@@ -1,16 +1,26 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // API configuration
   api: {
     bodyParser: {
-      sizeLimit: '10mb' // Increase the body size limit for API routes
+      sizeLimit: '10mb'
     },
     responseLimit: false
   },
+
   experimental: {
-    serverActions: true,
-    serverComponentsExternalPackages: ['next-auth']
+    // Update serverActions to use the correct type
+    serverActions: {
+      bodySizeLimit: '10mb',
+      allowedOrigins: ['*']
+    },
+    // Remove serverComponentsExternalPackages from experimental
   },
+
+  // Add serverComponentsExternalPackages at root level
+  serverComponentsExternalPackages: ['next-auth'],
+
   async headers() {
     return [
       {
@@ -24,6 +34,7 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+
   async rewrites() {
     if (process.env.VERCEL_ENV === 'production') {
       return [
@@ -44,4 +55,4 @@ const nextConfig: NextConfig = {
   }
 };
 
-export default nextConfig; 
+export default nextConfig;
