@@ -1,4 +1,4 @@
-import type { Metadata } from "next"
+import type { Metadata, Viewport } from "next"
 import { Inter } from "next/font/google"
 import { Analytics } from "@vercel/analytics/react"
 import { serverMono } from "@/styles/fonts"
@@ -8,25 +8,27 @@ import "@/styles/globals.css"
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" })
 
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: "cover",
+  themeColor: "#000000"
+}
+
 export const metadata: Metadata = {
-  title: "lupe",
-  description: "audio stem separation",
-  icons: {
-    icon: "/favicon.ico",
-  },
-  viewport: {
-    width: 'device-width',
-    initialScale: 1,
-    maximumScale: 1,
-    userScalable: false,
-    viewportFit: 'cover',
-  },
+  title: "Lupe",
+  description: "Stem player for your music",
+  manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
-    statusBarStyle: 'black-translucent',
-    title: 'lupe',
+    statusBarStyle: "default",
+    title: "Lupe"
   },
-  themeColor: '#ffffff',
+  formatDetection: {
+    telephone: false
+  }
 }
 
 export default function RootLayout({
@@ -36,6 +38,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${inter.variable} ${serverMono.variable}`} suppressHydrationWarning>
+      <head>
+        <link rel="icon" href="/assets/logo.png" />
+        <link rel="apple-touch-icon" href="/assets/logo.png" />
+      </head>
       <body className={`min-h-screen bg-background font-sans antialiased ${inter.className} overflow-hidden`}>
         <Providers>
           <Header />
