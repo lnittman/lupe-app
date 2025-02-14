@@ -36,9 +36,6 @@ export function FileUpload({ onCancel }: FileUploadProps) {
       setIsLoading(true);
       await initializeEngine();
 
-      // Convert file to base64
-      const fileData = await fileToBase64(file);
-
       // Create song info
       const songInfo = {
         id: crypto.randomUUID(),
@@ -47,43 +44,71 @@ export function FileUpload({ onCancel }: FileUploadProps) {
         stems: {}
       };
 
-      console.log('Uploading to stems API:', {
-        songInfo,
-        fileSize: file.size,
-        fileType: file.type
+      toast({
+        title: "Processing",
+        description: "Separating stems...",
       });
 
-      // Send to stems API
+      // First send to backend for separation
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const backendResponse = await fetch('http://localhost:8000/api/separate', {
+        method: 'POST',
+        body: formData
+      });
+
+      if (!backendResponse.ok) {
+        throw new Error('Failed to process file');
+      }
+
+      const backendData = await backendResponse.json();
+      console.log('Backend response:', backendData);
+
+      if (!backendData.stems || !Array.isArray(backendData.stems)) {
+        throw new Error('Invalid stems data received from backend');
+      }
+
+      toast({
+        title: "Uploading",
+        description: "Saving stems...",
+      });
+
+      // Then save to KV/blob storage
       const response = await fetch('/api/stems', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          file: fileData,
-          songInfo
+          songInfo,
+          stems: backendData.stems
         })
       });
 
-      console.log('Got response from stems API:', response.status);
-
       if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Upload failed: ${errorText}`);
+        const error = await response.text();
+        throw new Error(`Failed to save stems: ${error}`);
       }
 
       const result = await response.json();
-      console.log('Successfully processed stems:', result);
+      console.log('Stems API response:', result);
+      
+      // Handle successful upload
+      toast({
+        title: "Success!",
+        description: "Your song has been processed and saved.",
+      });
 
-      // Refresh the song list
+      // Refresh the page to show new song
       window.location.reload();
 
     } catch (error) {
-      console.error('Error processing file:', error);
+      console.error('Upload error:', error);
       toast({
-        title: 'error',
-        description: 'failed to process audio file',
-        variant: 'destructive'
+        title: "Error",
+        description: String(error),
+        variant: "destructive"
       });
     } finally {
       setIsLoading(false);

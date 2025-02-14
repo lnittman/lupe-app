@@ -16,6 +16,7 @@ export interface AudioStore {
   SplitProgress: SplitProgress | null
   file: File | null
   isLoading: boolean
+  showInstructions: boolean
 
   // Actions
   initializeEngine: () => Promise<void>

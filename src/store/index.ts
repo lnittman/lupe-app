@@ -24,6 +24,7 @@ export const useAudioStore = create<AudioStore>()(
       SplitProgress: null,
       file: null,
       isLoading: false,
+      showInstructions: false,
 
       // Actions
       initializeEngine: async () => {
@@ -313,6 +314,8 @@ export const useAudioStore = create<AudioStore>()(
           set({ isLoading: false });
         }
       },
+
+      setShowInstructions: (show) => set({ showInstructions: show }),
     };
   })
 ); 

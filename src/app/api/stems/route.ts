@@ -4,9 +4,6 @@ import { NextResponse } from 'next/server';
 import { put, list } from '@vercel/blob';
 import { kv } from '@vercel/kv';
 
-import { API_ENDPOINTS } from '@/lib/api/endpoints';
-import { StemType } from '@/types/audio';
-
 // Configure blob client with environment variable
 const getBlobConfig = () => {
   const token = process.env.LUPE_BLOB_READ_WRITE_TOKEN;
@@ -16,94 +13,80 @@ const getBlobConfig = () => {
   return { token };
 };
 
-interface SongMetadata {
-  id: string;
-  title: string;
-  date: string;
-  stems: Record<StemType, string>;
-}
-
 export async function POST(request: Request) {
   try {
-    // Check blob config at runtime
+    const { songInfo, stems } = await request.json();
+
+    // Validate request
+    if (!songInfo || !stems || !Array.isArray(stems)) {
+      return NextResponse.json(
+        { error: 'Missing or invalid stems data' },
+        { status: 400 }
+      );
+    }
+
+    // Get blob config
     const blobConfig = getBlobConfig();
 
-    console.log('api/stems POST started');
-    
-    const { file: fileData, songInfo } = await request.json();
-    console.log('Processing file for:', songInfo.title);
+    console.log(`Starting upload of ${stems.length} stems...`);
 
-    // Convert base64 to form data
-    const formData = new FormData();
-    const blob = await fetch(fileData).then(r => r.blob());
-    formData.append('file', blob, songInfo.title + '.wav');
+    // Upload each stem to blob storage
+    const stemUploads = await Promise.all(
+      stems.map(async (stem, index) => {
+        if (!stem.name || !stem.data) {
+          throw new Error(`Invalid stem data: ${JSON.stringify(stem)}`);
+        }
 
-    // Send to separation backend
-    console.log('Sending to separation backend...');
-    const separationResponse = await fetch(API_ENDPOINTS.SEPARATE, {
-      method: 'POST',
-      body: formData
-    });
+        console.log(`Processing stem ${index + 1}/${stems.length}: ${stem.name}`);
 
-    if (!separationResponse.ok) {
-      throw new Error(`Separation failed: ${separationResponse.statusText}`);
-    }
+        // Convert base64 to buffer
+        const binaryString = atob(stem.data);
+        const bytes = new Uint8Array(binaryString.length);
+        for (let i = 0; i < binaryString.length; i++) {
+          bytes[i] = binaryString.charCodeAt(i);
+        }
 
-    // Process stems and store in Vercel Blob
-    const responseData = await separationResponse.json();
-    console.log('Received response from backend:', responseData);
+        const blob = await put(
+          `stems/${songInfo.id}/${stem.name}.m4a`,
+          bytes.buffer,
+          {
+            ...blobConfig,
+            access: 'public',
+            addRandomSuffix: false,
+            contentType: 'audio/aac'
+          }
+        );
 
-    const { stems } = responseData;
-    if (!stems || !Array.isArray(stems)) {
-      throw new Error('Invalid stems data received from backend');
-    }
+        console.log(`Uploaded ${stem.name} (${bytes.length} bytes) to:`, blob.url);
+        return [stem.name, blob.url];
+      })
+    );
 
-    console.log('Processing stems:', stems.map(s => s.name));
+    // Create stems record
+    const stemUrls = Object.fromEntries(stemUploads);
+    console.log('Created stem URLs:', stemUrls);
 
-    // Store metadata in Vercel KV
-    const metadata: SongMetadata = {
+    // Save to KV
+    const metadata = {
       id: songInfo.id,
       title: songInfo.title,
       date: songInfo.date,
-      stems: {} as Record<StemType, string>
+      stems: stemUrls
     };
 
-    // Upload each stem to Vercel Blob
-    for (const stem of stems) {
-      console.log(`Processing stem: ${stem.name}`);
-      const blobResponse = await put(
-        `${songInfo.id}/${stem.name}.wav`,
-        Buffer.from(stem.data, 'base64'),
-        { 
-          access: 'public',
-          addRandomSuffix: false,
-          ...blobConfig
-        }
-      );
-      console.log(`Uploaded ${stem.name} to blob:`, blobResponse.url);
-      metadata.stems[stem.name as StemType] = blobResponse.url;
-    }
-
-    // Store metadata in Vercel KV
+    console.log('Saving metadata to KV:', metadata);
     await kv.set(`song:${songInfo.id}`, metadata);
-    await kv.zadd('songs', { 
+    await kv.zadd('songs', {
       score: Date.now(),
-      member: songInfo.id 
+      member: songInfo.id
     });
 
-    console.log('Successfully processed song:', metadata);
     return NextResponse.json(metadata);
 
   } catch (error) {
     console.error('Error processing stems:', error);
     return NextResponse.json(
-      { 
-        error: String(error),
-        details: process.env.NODE_ENV === 'development' ? {
-          blobConfigured: !!process.env.LUPE_BLOB_READ_WRITE_TOKEN,
-          kvConfigured: !!process.env.KV_REST_API_TOKEN
-        } : undefined
-      },
+      { error: String(error) },
       { status: 500 }
     );
   }

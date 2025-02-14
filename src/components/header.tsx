@@ -1,90 +1,30 @@
 'use client';
 
-import Image from 'next/image';
-import { ChevronDown, ChevronLeft } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useAudioStore } from '@/store';
-import { SystemActionType } from '@/types/action';
+import { ChevronDown, ChevronLeft } from 'lucide-react';
+import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-
-// Helper function to convert AudioBuffer to WAV
-function audioBufferToWav(buffer: AudioBuffer): ArrayBuffer {
-  const numOfChan = buffer.numberOfChannels;
-  const length = buffer.length * numOfChan * 2;
-  const sampleRate = buffer.sampleRate;
-  const bitsPerSample = 16;
-  const blockAlign = numOfChan * (bitsPerSample / 8);
-  const byteRate = sampleRate * blockAlign;
-  const dataSize = length;
-
-  const arrayBuffer = new ArrayBuffer(44 + dataSize);
-  const view = new DataView(arrayBuffer);
-
-  // RIFF identifier
-  writeString(view, 0, 'RIFF');
-  // file length minus RIFF identifier length and file description length
-  view.setUint32(4, 36 + dataSize, true);
-  // RIFF type
-  writeString(view, 8, 'WAVE');
-  // format chunk identifier
-  writeString(view, 12, 'fmt ');
-  // format chunk length
-  view.setUint32(16, 16, true);
-  // sample format (raw)
-  view.setUint16(20, 1, true);
-  // channel count
-  view.setUint16(22, numOfChan, true);
-  // sample rate
-  view.setUint32(24, sampleRate, true);
-  // byte rate (sample rate * block align)
-  view.setUint32(28, byteRate, true);
-  // block align (channel count * bytes per sample)
-  view.setUint16(32, blockAlign, true);
-  // bits per sample
-  view.setUint16(34, bitsPerSample, true);
-  // data chunk identifier
-  writeString(view, 36, 'data');
-  // data chunk length
-  view.setUint32(40, dataSize, true);
-
-  // Write the PCM samples
-  const offset = 44;
-  let pos = offset;
-  for (let i = 0; i < buffer.length; i++) {
-    for (let channel = 0; channel < numOfChan; channel++) {
-      const sample = buffer.getChannelData(channel)[i];
-      // Clamp between -1 and 1
-      const clampedSample = Math.max(-1, Math.min(1, sample));
-      // Convert to 16-bit signed integer
-      const int16 = clampedSample < 0 
-        ? clampedSample * 0x8000 
-        : clampedSample * 0x7FFF;
-      view.setInt16(pos, int16, true);
-      pos += 2;
-    }
-  }
-
-  return arrayBuffer;
-}
-
-function writeString(view: DataView, offset: number, string: string) {
-  for (let i = 0; i < string.length; i++) {
-    view.setUint8(offset + i, string.charCodeAt(i));
-  }
-}
+import { audioBufferToWav } from '@/lib/audio/utils';
+import { SystemActionType } from '@/types/action';
+import { useAudioStore } from '@/store';
 
 export function Header() {
+  const router = useRouter();
   const { 
-    stems, 
-    setStems, 
     engine, 
+    stems, 
     addAction,
-    setPlaybackRate 
+    setPlaybackRate, 
+    setStems,
+    showInstructions,
+    setShowInstructions 
   } = useAudioStore();
 
   const handleExit = () => {
@@ -102,7 +42,14 @@ export function Header() {
         type: SystemActionType.Exited,
         timestamp: Date.now()
       });
+
+      // Navigate back to home
+      router.push('/');
     }
+  };
+
+  const handleViewInstructions = () => {
+    setShowInstructions(true);
   };
 
   const handleDownloadStems = async () => {
@@ -164,21 +111,33 @@ export function Header() {
 
   return (
     <header className="fixed top-0 left-0 right-0 h-16 flex items-center justify-between px-4 z-50">
-      {/* Left: Back button */}
-      <AnimatePresence>
-        {stems && (
-          <motion.button 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.3, ease: "easeInOut" }}
-            onClick={handleExit}
-            className="h-8 w-8 border border-black flex items-center justify-center [border-radius:0] transition-colors hover:bg-black/5"
-          >
-            <ChevronLeft className="w-4 h-4" />
-          </motion.button>
-        )}
-      </AnimatePresence>
+      {/* Left: Back button or empty space */}
+      <div className="w-8">
+        <AnimatePresence>
+          {(stems && !showInstructions) && (
+            <motion.button
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={handleExit}
+              className="h-8 w-8 border border-black flex items-center justify-center [border-radius:0] transition-colors hover:bg-black/5"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </motion.button>
+          )}
+          {showInstructions && (
+            <motion.button
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowInstructions(false)}
+              className="h-8 w-8 border border-black flex items-center justify-center [border-radius:0] transition-colors hover:bg-black/5"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </motion.button>
+          )}
+        </AnimatePresence>
+      </div>
 
       {/* Center: Logo */}
       <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-8 w-8">
@@ -193,7 +152,7 @@ export function Header() {
 
       {/* Right: Menu */}
       <AnimatePresence>
-        {stems && (
+        {!showInstructions && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -207,11 +166,21 @@ export function Header() {
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48">
-                <DropdownMenuItem onClick={handleDownloadMix} className="text-sm">
-                  download mix
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleDownloadStems} className="text-sm">
-                  download stems
+                {stems ? (
+                  <>
+                    <DropdownMenuItem onClick={handleDownloadMix} className="text-sm">
+                      download mix
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleDownloadStems} className="text-sm">
+                      download stems
+                    </DropdownMenuItem>
+                  </>
+                ) : null}
+                <DropdownMenuItem 
+                  onClick={handleViewInstructions}
+                  className="text-sm"
+                >
+                  view instructions
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

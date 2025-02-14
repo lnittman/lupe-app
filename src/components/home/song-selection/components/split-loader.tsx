@@ -106,7 +106,7 @@ export function SplitLoader() {
           </div>
 
           <div className="text-sm text-neutral-500 font-mono inline-flex items-center justify-center w-full">
-            splitting stems
+            loading
             <span className="inline-flex items-center ml-[1px]">
               {'.'.repeat(3).split('').map((dot, i) => (
                 <span 
