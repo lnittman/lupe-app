@@ -171,6 +171,7 @@ export function Header() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
+            transition={{ duration: 0.3, ease: "easeInOut" }}
             onClick={handleExit}
             className="h-8 w-8 border border-black flex items-center justify-center [border-radius:0] transition-colors hover:bg-black/5"
           >
@@ -197,6 +198,7 @@ export function Header() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
+            transition={{ duration: 0.3, ease: "easeInOut" }}
           >
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
