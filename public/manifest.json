@@ -1,7 +1,7 @@
 {
-  "name": "Lupe",
-  "short_name": "Lupe",
-  "description": "Stem player for your music",
+  "name": "loops",
+  "short_name": "loops",
+  "description": "stem looper for your music",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",

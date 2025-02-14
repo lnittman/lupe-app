@@ -14,7 +14,7 @@ export const viewport: Viewport = {
   maximumScale: 1,
   userScalable: false,
   viewportFit: "cover",
-  themeColor: "#000000"
+  themeColor: "#ffffff"
 }
 
 export const metadata: Metadata = {
@@ -24,7 +24,8 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "Lupe"
+    title: "Lupe",
+    statusBarColor: "#ffffff"
   },
   formatDetection: {
     telephone: false
