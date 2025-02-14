@@ -18,33 +18,33 @@ export const StemPlayer = memo(() => {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="relative h-screen"
+      className="relative h-screen flex flex-col"
     >
       {/* Action Log - positioned in top left */}
       <div className="absolute left-0 z-20">
         <ActionLog />
       </div>
 
-      {/* Stem tracks container */}
-      <div className="absolute inset-x-0 bottom-[178px] z-10">
-        <div className="max-w-5xl mx-auto w-full px-3">
-          <GridNavigation />
-
-          {/* Stem tracks */}
-          <div className="flex flex-col gap-2">
-            {Object.keys(stems).map((name) => (
-              <StemTrack key={name} type={name as StemType} />
-            ))}
+      {/* Main content area with flex-1 to push controls to bottom */}
+      <div className="flex-1">
+        {/* Stem tracks container - positioned relative to main content */}
+        <div className="absolute inset-x-0 bottom-[186px]">
+          <div className="max-w-5xl mx-auto w-full px-3">
+            <GridNavigation />
+            
+            {/* Stem tracks */}
+            <div className="flex flex-col gap-2">
+              {Object.keys(stems).map((name) => (
+                <StemTrack key={name} type={name as StemType} />
+              ))}
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Player Controls */}
-      <div className="absolute inset-x-0 bottom-0">
-        <PlayerControls />
-      </div>
+      <PlayerControls />
     </motion.div>
   );
 });
 
-StemPlayer.displayName = 'StemPlayer'; 
+StemPlayer.displayName = 'StemPlayer';
