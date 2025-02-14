@@ -18,17 +18,17 @@ export const StemPlayer = memo(() => {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="relative h-screen flex flex-col"
+      className="fixed inset-0 flex flex-col"
     >
       {/* Action Log - positioned in top left */}
       <div className="absolute left-0 z-20">
         <ActionLog />
       </div>
 
-      {/* Main content area with flex-1 to push controls to bottom */}
-      <div className="flex-1">
-        {/* Stem tracks container - positioned relative to main content */}
-        <div className="absolute inset-x-0 bottom-[186px]">
+      {/* Main content area that fills available space */}
+      <div className="flex-1 relative">
+        {/* Stem tracks container - positioned above controls with padding */}
+        <div className="absolute inset-x-0 bottom-0 pb-4">
           <div className="max-w-5xl mx-auto w-full px-3">
             <GridNavigation />
             
@@ -42,7 +42,10 @@ export const StemPlayer = memo(() => {
         </div>
       </div>
 
-      <PlayerControls />
+      {/* Controls fixed to bottom with safe area inset */}
+      <div className="relative">
+        <PlayerControls />
+      </div>
     </motion.div>
   );
 });
