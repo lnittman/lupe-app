@@ -1,3 +1,4 @@
+/// <reference types="node" />
 import { NextResponse } from 'next/server';
 
 import { put, list } from '@vercel/blob';
@@ -7,13 +8,13 @@ import { API_ENDPOINTS } from '@/lib/api/endpoints';
 import { StemType } from '@/types/audio';
 
 // Configure blob client with environment variable
-const blobConfig = {
-  token: process.env.BLOB_READ_WRITE_TOKEN
+const getBlobConfig = () => {
+  const token = process.env.LUPE_BLOB_READ_WRITE_TOKEN;
+  if (!token) {
+    throw new Error('LUPE_BLOB_READ_WRITE_TOKEN environment variable is not set');
+  }
+  return { token };
 };
-
-if (!blobConfig.token) {
-  throw new Error('BLOB_READ_WRITE_TOKEN environment variable is not set');
-}
 
 interface SongMetadata {
   id: string;
@@ -23,16 +24,12 @@ interface SongMetadata {
 }
 
 export async function POST(request: Request) {
-  if (!process.env.BLOB_READ_WRITE_TOKEN) {
-    return NextResponse.json(
-      { error: 'Blob storage is not configured' },
-      { status: 500 }
-    );
-  }
-
-  console.log('api/stems POST started');
-  
   try {
+    // Check blob config at runtime
+    const blobConfig = getBlobConfig();
+
+    console.log('api/stems POST started');
+    
     const { file: fileData, songInfo } = await request.json();
     console.log('Processing file for:', songInfo.title);
 
@@ -79,7 +76,8 @@ export async function POST(request: Request) {
         Buffer.from(stem.data, 'base64'),
         { 
           access: 'public',
-          addRandomSuffix: false
+          addRandomSuffix: false,
+          ...blobConfig
         }
       );
       console.log(`Uploaded ${stem.name} to blob:`, blobResponse.url);
@@ -102,7 +100,7 @@ export async function POST(request: Request) {
       { 
         error: String(error),
         details: process.env.NODE_ENV === 'development' ? {
-          blobConfigured: !!process.env.BLOB_READ_WRITE_TOKEN,
+          blobConfigured: !!process.env.LUPE_BLOB_READ_WRITE_TOKEN,
           kvConfigured: !!process.env.KV_REST_API_TOKEN
         } : undefined
       },
@@ -113,6 +111,9 @@ export async function POST(request: Request) {
 
 export async function GET() {
   try {
+    // Check blob config at runtime
+    const blobConfig = getBlobConfig();
+
     console.log('Listing song metadata files from Blob storage...');
     const { blobs } = await list({ 
       ...blobConfig,

@@ -6,23 +6,9 @@ export const serverMono = localFont({
       path: '../../public/fonts/ServerMono-Regular.woff2',
       weight: '400',
       style: 'normal',
-    },
-    {
-      path: '../../public/fonts/ServerMono-RegularItalic.woff2',
-      weight: '400',
-      style: 'italic',
-    },
-    {
-      path: '../../public/fonts/ServerMono-Bold.woff2',
-      weight: '700',
-      style: 'normal',
-    },
-    {
-      path: '../../public/fonts/ServerMono-BoldItalic.woff2',
-      weight: '700',
-      style: 'italic',
-    },
+    }
   ],
   variable: '--font-server-mono',
   display: 'swap',
+  fallback: ['monospace'],
 }); 
