@@ -24,8 +24,7 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "Lupe",
-    statusBarColor: "#ffffff"
+    title: "Lupe"
   },
   formatDetection: {
     telephone: false

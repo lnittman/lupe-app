@@ -9,8 +9,12 @@ export default function HomePage() {
   const { stems, isLoading } = useAudioStore();
 
   return (
-    <div className="min-h-screen flex flex-col">
-      {!stems && !isLoading && <SongSelection />}
+    <div className="min-h-[90dvh] flex flex-col">
+      {!stems && !isLoading && (
+        <div className="flex-1 flex items-center justify-center">
+          <SongSelection />
+        </div>
+      )}
       {isLoading && (
         <div className="flex-1 flex items-center justify-center">
           <SplitLoader />
