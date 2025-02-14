@@ -112,9 +112,9 @@ export function SongSelection() {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="flex-1 flex flex-col items-center justify-center px-3"
+      className="flex-1 flex flex-col items-center justify-center px-3 min-h-[100dvh]"
     >
-      <div className="max-w-md w-full space-y-5">
+      <div className="max-w-md w-full space-y-5 py-20 md:py-0">
         <h2 className="text-xl font-mono text-center">
           select a song to remix
         </h2>

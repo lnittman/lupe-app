@@ -31,7 +31,7 @@ export const StemPlayer = memo(() => {
       <div className="flex-1 flex flex-col">
         {/* Stems area */}
         <div className="flex-1 flex flex-col justify-end">
-          <div className={`w-full px-4 ${isMobile ? 'pb-[220px]' : 'pb-[180px]'}`}>
+          <div className={`w-full px-4 ${isMobile ? 'pb-[280px]' : 'pb-[180px]'}`}>
             <div className="max-w-[1400px] mx-auto w-full">
               <GridNavigation />
               <div className="flex flex-col gap-2 mt-2">
