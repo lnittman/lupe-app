@@ -19,11 +19,11 @@ export const StemPlayer = memo(() => {
       animate={{ opacity: 1 }}
       className="min-h-screen flex flex-col"
     >
-      <div className="flex-1 flex">
-        <div className="flex-1 flex flex-col w-full">
-          <div className="flex-1" /> {/* Spacer */}
-          
-          <div className="w-full px-4 mb-[1px]">
+      {/* Main content area */}
+      <div className="flex-1 flex flex-col">
+        {/* Stems area */}
+        <div className="flex-1 flex flex-col justify-end">
+          <div className="w-full px-4 pb-[180px] md:pb-[120px]">
             <div className="max-w-[1400px] mx-auto w-full">
               <GridNavigation />
               <div className="flex flex-col gap-2 mt-2">
@@ -34,9 +34,10 @@ export const StemPlayer = memo(() => {
             </div>
           </div>
         </div>
-
-        <PlayerControls />
       </div>
+
+      {/* Controls */}
+      <PlayerControls />
     </motion.div>
   );
 });
