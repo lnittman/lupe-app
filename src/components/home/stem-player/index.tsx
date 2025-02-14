@@ -6,7 +6,6 @@ import { StemType } from "@/types/audio";
 
 import { PlayerControls } from "./components/player-controls";
 import { GridNavigation } from "./components/grid-navigation";
-import { ActionLog } from "../action-log";
 import StemTrack from "./components/stem-track";
 
 export const StemPlayer = memo(() => {
@@ -20,18 +19,11 @@ export const StemPlayer = memo(() => {
       animate={{ opacity: 1 }}
       className="min-h-screen flex flex-col"
     >
-      {/* Action Log 
-      <ActionLog />
-*/}
-
-      {/* Main content area with proper spacing */}
       <div className="flex-1 flex">
-        {/* Main stems area - full width */}
         <div className="flex-1 flex flex-col w-full">
           <div className="flex-1" /> {/* Spacer */}
           
-          {/* Stems section */}
-          <div className="w-full px-4 mb-[188px]">
+          <div className="w-full px-4 mb-[1px]">
             <div className="max-w-[1400px] mx-auto w-full">
               <GridNavigation />
               <div className="flex flex-col gap-2 mt-2">
