@@ -28,7 +28,7 @@ export const StemPlayer = memo(() => {
       {/* Main content area that fills available space */}
       <div className="flex-1 relative">
         {/* Stem tracks container - positioned above controls with padding */}
-        <div className="absolute inset-x-0 bottom-0 pb-4">
+        <div className="absolute inset-x-0 bottom-0 pb-6">
           <div className="max-w-5xl mx-auto w-full px-3">
             <GridNavigation />
             
