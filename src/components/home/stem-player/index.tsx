@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { memo } from "react";
+import { isMobile } from 'react-device-detect';
 
 import { useAudioStore } from '@/store';
 import { StemType } from "@/types/audio";
@@ -23,7 +24,7 @@ export const StemPlayer = memo(() => {
       <div className="flex-1 flex flex-col">
         {/* Stems area */}
         <div className="flex-1 flex flex-col justify-end">
-          <div className="w-full px-4 pb-[180px] md:pb-[120px]">
+          <div className={`w-full px-4 ${isMobile ? 'pb-[200px]' : 'pb-[120px]'}`}>
             <div className="max-w-[1400px] mx-auto w-full">
               <GridNavigation />
               <div className="flex flex-col gap-2 mt-2">

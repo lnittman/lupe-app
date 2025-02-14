@@ -2,6 +2,7 @@
 
 import Image from 'next/image';
 import { ChevronDown, ChevronLeft } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useAudioStore } from '@/store';
 import { SystemActionType } from '@/types/action';
 import {
@@ -164,14 +165,19 @@ export function Header() {
   return (
     <header className="fixed top-0 left-0 right-0 h-16 flex items-center justify-between px-4 z-50">
       {/* Left: Back button */}
-      {stems && (
-        <button 
-          onClick={handleExit}
-          className="h-8 w-8 border border-black flex items-center justify-center [border-radius:0] transition-colors hover:bg-black/5"
-        >
-          <ChevronLeft className="w-4 h-4" />
-        </button>
-      )}
+      <AnimatePresence>
+        {stems && (
+          <motion.button 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={handleExit}
+            className="h-8 w-8 border border-black flex items-center justify-center [border-radius:0] transition-colors hover:bg-black/5"
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </motion.button>
+        )}
+      </AnimatePresence>
 
       {/* Center: Logo */}
       <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-8 w-8">
@@ -185,23 +191,31 @@ export function Header() {
       </div>
 
       {/* Right: Menu */}
-      {stems && (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <button className="h-8 w-8 border border-black flex items-center justify-center [border-radius:0] transition-colors hover:bg-black/5">
-              <ChevronDown className="w-4 h-4" />
-            </button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-48">
-            <DropdownMenuItem onClick={handleDownloadMix} className="text-sm">
-              download mix
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={handleDownloadStems} className="text-sm">
-              download stems
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      )}
+      <AnimatePresence>
+        {stems && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="h-8 w-8 border border-black flex items-center justify-center [border-radius:0] transition-colors hover:bg-black/5">
+                  <ChevronDown className="w-4 h-4" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuItem onClick={handleDownloadMix} className="text-sm">
+                  download mix
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleDownloadStems} className="text-sm">
+                  download stems
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </header>
   );
 } 
