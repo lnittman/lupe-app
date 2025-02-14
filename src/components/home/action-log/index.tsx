@@ -41,28 +41,30 @@ export function ActionLog() {
   const actions = useAudioStore(state => state.actions);
 
   return (
-    <div className="fixed h-46 overflow-y-auto bg-white p-4 font-mono text-xs border border-black">
-      {actions.map((action) => (
-        <motion.div
-          key={action.id}
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: 20 }}
-          className="mb-2"
-        >
-          <div className="text-neutral-500">
-            {format(action.timestamp, 'HH:mm:ss.SSS')}
-          </div>
+    <div className="fixed left-4 right-4 h-[200px] bg-white font-mono text-xs border border-black overflow-y-auto">
+      <div className="max-w-[1400px] mx-auto w-full px-3 mt-1">
+        {actions.map((action) => (
+          <motion.div
+            key={action.id}
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 20 }}
+            className="mb-2"
+          >
+            <div className="text-neutral-500">
+              {format(action.timestamp, 'HH:mm:ss.SSS')}
+            </div>
 
-          <div className="flex items-center gap-2">
-            <span className="uppercase text-black font-mono">
-              {Object.values(SystemActionType).includes(action.type as SystemActionType) ? 'SYSTEM' : action.type}
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="uppercase text-black font-mono">
+                {Object.values(SystemActionType).includes(action.type as SystemActionType) ? 'SYSTEM' : action.type}
+              </span>
 
-            <span className="text-neutral-600">{getActionMessage(action)}</span>
-          </div>
-        </motion.div>
-      ))}
+              <span className="text-neutral-600">{getActionMessage(action)}</span>
+            </div>
+          </motion.div>
+        ))}
+      </div>
     </div>
   );
 }

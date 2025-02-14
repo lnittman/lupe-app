@@ -90,6 +90,24 @@
   body {
     @apply bg-background text-foreground;
   }
+
+  /* Custom scrollbar styles */
+  ::-webkit-scrollbar {
+    @apply w-2 h-2;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-black border-0 rounded-none hover:bg-black/80;
+  }
+
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: #000 transparent;
+  }
 }
 
 @layer components {
