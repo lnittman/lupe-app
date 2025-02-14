@@ -24,7 +24,7 @@ export async function processStemSplit(file: File): Promise<SplitResponse> {
 
   // Create AbortController for timeout
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 60000); // Increased to 60 seconds
+  const timeoutId = setTimeout(() => controller.abort(), 300000); // 5 minutes timeout
 
   try {
     const response = await fetch(url, {
@@ -33,7 +33,10 @@ export async function processStemSplit(file: File): Promise<SplitResponse> {
       signal: controller.signal,
       headers: {
         'Accept': 'application/json',
-      }
+      },
+      mode: 'cors',
+      credentials: 'omit',
+      keepalive: true,
     });
 
     clearTimeout(timeoutId);

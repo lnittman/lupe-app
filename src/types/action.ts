@@ -4,7 +4,8 @@ export enum SystemActionType {
   BPMChanged = 'BPM_CHANGED',
   EngineInitialized = 'ENGINE_INITIALIZED',
   StemAdded = 'STEM_ADDED',
-  StemSplit = 'STEM_SPLIT'
+  StemSplit = 'STEM_SPLIT',
+  Exited = 'SYSTEM_EXITED'
 }
 
 export enum UserActionType {
@@ -93,6 +94,10 @@ export interface EngineInitializedAction extends BaseAction {
   type: SystemActionType.EngineInitialized;
 }
 
+export interface ExitedAction extends BaseAction {
+  type: SystemActionType.Exited;
+}
+
 export type Action = 
   | StemAddedAction 
   | BPMChangedAction
@@ -106,4 +111,5 @@ export type Action =
   | StemLoopChangedAction
   | StemSplitAction
   | StemReversedAction
-  | EngineInitializedAction;
+  | EngineInitializedAction
+  | ExitedAction;

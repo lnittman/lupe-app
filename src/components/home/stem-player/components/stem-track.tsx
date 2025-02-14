@@ -146,7 +146,6 @@ const StemTrack = memo(({ type }: StemTrackProps) => {
                   )}
                   animate={{
                     opacity: isPlaying && isCurrentPosition ? 1 : undefined,
-                    scale: isPlaying && isCurrentPosition ? 1.1 : 1
                   }}
                   transition={{ duration: 0.05 }}
                 />

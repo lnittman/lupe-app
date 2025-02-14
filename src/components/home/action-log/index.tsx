@@ -30,6 +30,8 @@ function getActionMessage(action: Action): string {
       return `${action.stem} loop changed to ${action.loopStart}:${action.loopLength}`;
     case UserActionType.StemReversed:
       return `${action.stem} playback ${action.reversed ? 'reversed' : 'normal'}`;
+    case SystemActionType.Exited:
+      return 'exited player';
     default:
       return '';
   }

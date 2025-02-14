@@ -181,11 +181,40 @@ export const useAudioStore = create<AudioStore>()(
         set({ file });
       },
 
-      setStems: (stems: Stems) => {
+      setStems: (stems: Stems | null) => {
         const { engine } = get();
 
         if (!engine) {
           console.error('No engine available when setting stems');
+          return;
+        }
+
+        // Clear old stems and stop playback
+        const oldStems = get().stems;
+        if (oldStems) {
+          // Stop playback first
+          engine.stopPlayback();
+          
+          // Then remove stems
+          Object.values(oldStems).forEach(stem => {
+            try {
+              engine.removeStem(stem.name as StemType);
+            } catch (err) {
+              console.warn(`Failed to remove stem ${stem.name}:`, err);
+            }
+          });
+        }
+
+        // If stems is null, reset other state too
+        if (!stems) {
+          set({ 
+            stems: null,
+            isPlaying: false,
+            selectedStem: null,
+            gridViewOffset: 0,
+            playbackRate: 1,
+            bpm: 120
+          });
           return;
         }
 

@@ -4,7 +4,6 @@ import { ChevronUp, ChevronDown } from 'lucide-react';
 import { memo, useCallback, useRef, useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { useAudioStore } from '@/store';
-import { useIsMobile } from '@/hooks/use-mobile';
 
 export const PlayerControls = memo(() => {
   const { 
@@ -20,12 +19,9 @@ export const PlayerControls = memo(() => {
   const [tempoBpm, setTempoBpm] = useState<string>(bpm.toString());
   const [lastTapTime, setLastTapTime] = useState<number>(0);
   const tapTimesRef = useRef<number[]>([]);
-  const isMobile = useIsMobile();
 
   // Handle keyboard shortcuts
   useEffect(() => {
-    if (isMobile) return; // Don't add keyboard listeners on mobile
-    
     const handleKeyPress = (e: KeyboardEvent) => {
       if (!engine || !isInitialized) return;
 
@@ -37,7 +33,7 @@ export const PlayerControls = memo(() => {
 
     window.addEventListener('keydown', handleKeyPress);
     return () => window.removeEventListener('keydown', handleKeyPress);
-  }, [engine, isInitialized, isMobile]);
+  }, [engine, isInitialized]);
 
   const handleBpmChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setTempoBpm(e.target.value);
@@ -96,10 +92,6 @@ export const PlayerControls = memo(() => {
     setTempoBpm(newBPM.toString());
   };
 
-  const buttonHeight = isMobile ? "h-8" : "h-10";
-  const buttonWidth = isMobile ? "w-24" : "w-32";
-  const fontSize = isMobile ? "text-sm" : "text-base";
-
   return (
     <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-black">
       <div className="p-4 flex justify-between">
@@ -111,7 +103,7 @@ export const PlayerControls = memo(() => {
                 engine.startPlayback();
               }
             }}
-            className={`${buttonHeight} ${buttonWidth} bg-black text-white flex items-center justify-center [border-radius:0] transition-colors hover:bg-black/90 font-mono`}
+            className="h-8 w-24 bg-black text-white flex items-center justify-center [border-radius:0] transition-colors hover:bg-black/90 font-mono text-sm"
           >
             play
           </button>
@@ -121,7 +113,7 @@ export const PlayerControls = memo(() => {
                 engine.stopPlayback();
               }
             }}
-            className={`${buttonHeight} ${buttonWidth} bg-black text-white flex items-center justify-center [border-radius:0] transition-colors hover:bg-black/90 font-mono`}
+            className="h-8 w-24 bg-black text-white flex items-center justify-center [border-radius:0] transition-colors hover:bg-black/90 font-mono text-sm"
           >
             stop
           </button>
@@ -141,22 +133,22 @@ export const PlayerControls = memo(() => {
                 if (e.key === 'Enter') handleBpmSubmit();
               }}
               readOnly={true}
-              className={`${buttonHeight} ${buttonWidth} ${fontSize} font-mono text-center [border-radius:0]`}
+              className="h-8 w-24 text-sm font-mono text-center [border-radius:0]"
               min={1}
               max={999}
             />
-            <div className={`flex ${buttonHeight}`}>
+            <div className="flex h-8">
               <button 
                 onClick={() => handleBpmAdjust(1)}
                 className="flex-1 h-full flex items-center justify-center hover:bg-black/5 transition-colors border border-black"
               >
-                <ChevronUp className={isMobile ? "w-3 h-3" : "w-4 h-4"} />
+                <ChevronUp className="w-3 h-3" />
               </button>
               <button 
                 onClick={() => handleBpmAdjust(-1)}
                 className="flex-1 h-full flex items-center justify-center hover:bg-black/5 transition-colors border-t border-r border-b border-black"
               >
-                <ChevronDown className={isMobile ? "w-3 h-3" : "w-4 h-4"} />
+                <ChevronDown className="w-3 h-3" />
               </button>
             </div>
           </div>
@@ -165,13 +157,13 @@ export const PlayerControls = memo(() => {
           <div className="flex flex-col gap-2">
             <button
               onClick={handleTapTempo}
-              className={`${buttonHeight} ${buttonWidth} bg-black text-white ${fontSize} font-mono hover:bg-black/90 transition-colors`}
+              className="h-8 w-24 bg-black text-white text-sm font-mono hover:bg-black/90 transition-colors"
             >
               tap
             </button>
             <button 
               onClick={handlePlaybackRateChange}
-              className={`${buttonHeight} ${buttonWidth} bg-black text-white ${fontSize} font-mono hover:bg-black/90 transition-colors`}
+              className="h-8 w-24 bg-black text-white text-sm font-mono hover:bg-black/90 transition-colors"
             >
               {playbackRate}x
             </button>

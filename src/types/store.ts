@@ -29,7 +29,7 @@ export interface AudioStore {
   setIsLoading: (isLoading: boolean) => void
   setSplitProgress: (progress: SplitProgress | null) => void
   setFile: (file: File) => void
-  setStems: (stems: Stems) => void
+  setStems: (stems: Stems | null) => void
   processAudioFile: (file: File) => Promise<void>
   dispose: () => void
 }

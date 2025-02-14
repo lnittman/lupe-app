@@ -356,6 +356,16 @@ export class AudioEngine extends EventEmitter {
     });
   }
 
+  public removeStem(name: StemType) {
+    const stem = this.stems.get(name);
+    if (stem) {
+      stem.player.stop();
+      stem.player.dispose();
+      stem.volume.dispose();
+      this.stems.delete(name);
+    }
+  }
+
   // Private methods
 
   private logAction(type: string, details: Record<string, unknown>): void {
