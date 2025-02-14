@@ -94,9 +94,9 @@ export const PlayerControls = memo(() => {
 
   return (
     <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-black">
-      <div className="p-4 pb-6 flex justify-between max-w-5xl mx-auto safe-area-inset-bottom">
+      <div className="px-4 pt-4 pb-8 flex justify-between max-w-5xl mx-auto pb-[calc(env(safe-area-inset-bottom,24px)+1rem)]">
         {/* Left corner - Play/Stop */}
-        <div className="flex flex-col gap-1">
+        <div className="flex flex-col gap-2">
           <button
             onClick={() => {
               if (engine) {

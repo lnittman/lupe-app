@@ -155,8 +155,13 @@ export class AudioEngine extends EventEmitter {
   }
 
   public dispose(): void {
-    // Dispose of all audio nodes
+    // Reset all stems to default state before disposing
     this.stems.forEach(({ player }) => {
+      // Reset loop points to defaults
+      const { startTime, endTime } = this.gridClock.calculateLoopPoints(0, 32);
+      player.loopStart = startTime;
+      player.loopEnd = endTime;
+      player.playbackRate = 1;
       player.dispose();
     });
     
@@ -167,6 +172,13 @@ export class AudioEngine extends EventEmitter {
     
     // Clear all maps
     this.stems.clear();
+
+    // Emit exited action
+    this.emit('action', {
+      type: SystemActionType.Exited,
+      id: crypto.randomUUID(),
+      timestamp: Date.now()
+    });
   }
 
   public getBPM(): number {
