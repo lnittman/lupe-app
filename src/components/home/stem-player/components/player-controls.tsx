@@ -94,7 +94,7 @@ export const PlayerControls = memo(() => {
 
   return (
     <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-black">
-      <div className="p-3 flex justify-between">
+      <div className="p-4 pb-6 flex justify-between max-w-5xl mx-auto safe-area-inset-bottom">
         {/* Left corner - Play/Stop */}
         <div className="flex flex-col gap-1">
           <button

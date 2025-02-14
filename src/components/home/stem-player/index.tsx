@@ -21,12 +21,12 @@ export const StemPlayer = memo(() => {
       className="relative h-screen"
     >
       {/* Action Log - positioned in top left */}
-      <div className="absolute left-0 z-10">
+      <div className="absolute left-0 z-20">
         <ActionLog />
       </div>
 
-      {/* Stem tracks container - positioned from bottom */}
-      <div className="absolute bottom-[110px] left-0 right-0">
+      {/* Stem tracks container */}
+      <div className="absolute inset-x-0 bottom-[178px] z-10">
         <div className="max-w-5xl mx-auto w-full px-3">
           <GridNavigation />
 
@@ -40,7 +40,9 @@ export const StemPlayer = memo(() => {
       </div>
 
       {/* Player Controls */}
-      <PlayerControls />
+      <div className="absolute inset-x-0 bottom-0">
+        <PlayerControls />
+      </div>
     </motion.div>
   );
 });

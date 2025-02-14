@@ -9,67 +9,63 @@ import { StemType } from "@/types/audio";
 export function SplitLoader() {
   const { SplitProgress, stems, setIsLoading } = useAudioStore();
 
-  const completedRef = useRef(false);
-  const hasStartedRef = useRef(false);
-  const dotsIntervalRef = useRef<number | null>(null);
-  const progressIntervalRef = useRef<number | null>(null);
-
   const [dots, setDots] = useState('');
   const [fakeProgress, setFakeProgress] = useState(0);
+  const [isAnimating, setIsAnimating] = useState(false);
 
+  // Start the animation immediately on mount
   useEffect(() => {
-    if (hasStartedRef.current) return;
-    hasStartedRef.current = true;
+    let dotsInterval: number;
+    let progressInterval: number;
 
-    setDots('');
-    setFakeProgress(0);
+    const startAnimation = () => {
+      setIsAnimating(true);
+      setFakeProgress(0);
+      setDots('');
 
-    dotsIntervalRef.current = window.setInterval(() => {
-      setDots(prev => prev.length >= 3 ? '' : prev + '.');
-    }, 500);
+      // Dots animation
+      dotsInterval = window.setInterval(() => {
+        setDots(prev => prev.length >= 3 ? '' : prev + '.');
+      }, 500);
 
-    const progressSteps = Array.from({ length: 90 }, () => {
-      const baseStep = 0.01;
-      const randomVariation = Math.random() * 0.005;
+      // Progress animation
+      let currentStep = 0;
+      const totalSteps = 180; // Doubled the steps
+      const baseStep = 0.005; // Halved the base step
 
-      return baseStep + randomVariation;
-    });
+      progressInterval = window.setInterval(() => {
+        if (currentStep < totalSteps) {
+          currentStep++;
+          setFakeProgress(prev => {
+            const increment = baseStep + (Math.random() * 0.002); // Smaller random variation
+            return Math.min(0.9, prev + increment);
+          });
+        }
+      }, 150); // Slightly longer interval
+    };
 
-    let currentStep = 0;
-
-    progressIntervalRef.current = window.setInterval(() => {
-      setFakeProgress(prev => {
-        if (currentStep >= progressSteps.length) return prev;
-        const nextProgress = prev + progressSteps[currentStep++];
-        return Math.min(0.9, nextProgress);
-      });
-    }, 100);
+    startAnimation();
 
     return () => {
-      if (dotsIntervalRef.current) window.clearInterval(dotsIntervalRef.current);
-      if (progressIntervalRef.current) window.clearInterval(progressIntervalRef.current);
+      window.clearInterval(dotsInterval);
+      window.clearInterval(progressInterval);
     };
   }, []);
 
+  // Handle completion when stems are loaded
   useEffect(() => {
-    if (stems && Object.keys(stems).length > 0 && !completedRef.current) {
-      console.log('stems arrived');
-      console.log(stems);
-
-      if (progressIntervalRef.current) window.clearInterval(progressIntervalRef.current);
-      if (dotsIntervalRef.current) window.clearInterval(dotsIntervalRef.current);
-      
-      completedRef.current = true;
-      
+    if (stems && Object.keys(stems).length > 0 && isAnimating) {
+      setIsAnimating(false);
       setFakeProgress(1);
       
+      // Small delay before removing loader
       const timer = setTimeout(() => {
         setIsLoading(false);
       }, 400);
 
       return () => clearTimeout(timer);
     }
-  }, [stems, setIsLoading]);
+  }, [stems, isAnimating, setIsLoading]);
 
   const progress = SplitProgress?.progress ?? fakeProgress;
   const progressPercent = Math.round(progress * 100);
@@ -79,9 +75,9 @@ export function SplitLoader() {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="flex-1 flex items-center justify-center"
+      className="h-full w-full flex items-center justify-center"
     >
-      <div className="text-center space-y-6 max-w-md mx-auto">
+      <div className="text-center space-y-6 max-w-md mx-auto px-4">
         <div className="space-y-4">
           <div className="text-xs text-neutral-400 font-mono">{progressPercent}%</div>
 
@@ -89,7 +85,7 @@ export function SplitLoader() {
             <motion.div 
               className="absolute inset-y-0 left-0 bg-black"
               initial={{ width: 0 }}
-              animate={{ width: `${progress * 100}%` }}
+              animate={{ width: `${progressPercent}%` }}
               transition={{ duration: 0.4 }}
             />
           </div>
@@ -109,9 +105,8 @@ export function SplitLoader() {
             ))}
           </div>
 
-          <div className="text-sm text-neutral-500 font-mono inline-flex items-center justify-center">
+          <div className="text-sm text-neutral-500 font-mono inline-flex items-center justify-center w-full">
             splitting stems
-
             <span className="inline-flex items-center ml-[1px]">
               {'.'.repeat(3).split('').map((dot, i) => (
                 <span 

@@ -98,7 +98,6 @@ export function SongSelection() {
     }
   };
 
-
   if (showUpload) {
     return <FileUpload onCancel={() => setShowUpload(false)} />;
   }
@@ -113,9 +112,9 @@ export function SongSelection() {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="flex-1 flex flex-col items-center justify-center p-4"
+      className="flex-1 flex flex-col items-center justify-center px-3"
     >
-      <div className="max-w-md w-full space-y-8">
+      <div className="max-w-md w-full space-y-5">
         <h2 className="text-xl font-mono text-center">
           select a song to remix
         </h2>
