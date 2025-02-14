@@ -366,6 +366,64 @@ export class AudioEngine extends EventEmitter {
     }
   }
 
+  public async exportMix(): Promise<AudioBuffer> {
+    if (!this.stems.size) throw new Error('No stems to export');
+
+    // Find the longest loop duration
+    let maxDuration = 0;
+    this.stems.forEach(({ player }) => {
+      const loopDuration = Number(player.loopEnd) - Number(player.loopStart);
+      maxDuration = Math.max(maxDuration, loopDuration);
+    });
+
+    // Create a new buffer for the mix
+    const mixBuffer = this.context.createBuffer(
+      2, // Stereo output
+      Math.ceil(maxDuration * this.context.sampleRate),
+      this.context.sampleRate
+    );
+
+    // Mix all stems
+    this.stems.forEach(({ player, volume }) => {
+      const buffer = player.buffer;
+      if (!buffer) return;
+
+      const loopStart = Number(player.loopStart);
+      const loopEnd = Number(player.loopEnd);
+      const loopLength = loopEnd - loopStart;
+      const isReversed = player.reverse;
+      const isMuted = volume.volume.value === -Infinity;
+      const gainValue = isMuted ? 0 : Math.pow(10, volume.volume.value / 20);
+
+      // For each channel
+      for (let channel = 0; channel < mixBuffer.numberOfChannels; channel++) {
+        const mixData = mixBuffer.getChannelData(channel);
+        const stemData = buffer.getChannelData(Math.min(channel, buffer.numberOfChannels - 1));
+
+        // Fill the mix buffer with the looped stem data
+        for (let i = 0; i < mixBuffer.length; i++) {
+          const loopPosition = (i / mixBuffer.length) * loopLength;
+          let sourcePosition = loopStart + loopPosition;
+
+          // Handle reverse playback
+          if (isReversed) {
+            sourcePosition = loopEnd - loopPosition;
+          }
+
+          // Get the sample (with rate adjustment)
+          const sourceSample = stemData[Math.floor(sourcePosition * this.playbackRate)];
+          
+          // Add to mix with volume
+          if (sourceSample !== undefined) {
+            mixData[i] += sourceSample * gainValue;
+          }
+        }
+      }
+    });
+
+    return mixBuffer;
+  }
+
   // Private methods
 
   private logAction(type: string, details: Record<string, unknown>): void {

@@ -90,21 +90,21 @@ const StemTrack = memo(({ type }: StemTrackProps) => {
   };
 
   return (
-    <div className={`w-full bg-white border border-black cursor-pointer flex items-stretch`}>
+    <div className="h-[52px] w-full bg-white border border-black cursor-pointer flex items-stretch">
       {/* Left margin control */}
       <button
-        className="w-12 flex items-center justify-center hover:bg-black/5"
+        className="w-8 md:w-12 flex items-center justify-center hover:bg-black/5"
         onClick={() => moveLoop(-1)}
       >
         <ChevronLeft className="w-4 h-4" />
       </button>
 
       {/* Main content */}
-      <div className="flex-1 p-4" onClick={() => selectStem(type)}>
-        <div className="flex items-center justify-between gap-4">
-          <div className="flex items-center gap-2 w-24">
+      <div className="flex-1 flex items-center px-3" onClick={() => selectStem(type)}>
+        <div className="flex items-center justify-between gap-3 w-full">
+          <div className="flex items-center gap-1 w-20 flex-shrink-0">
             <button 
-              className={`text-xs font-mono tracking-tight hover:opacity-70 ${isMuted ? 'opacity-50' : ''} w-16`}
+              className={`text-xs font-mono tracking-tight hover:opacity-70 ${isMuted ? 'opacity-50' : ''} w-12 md:w-16`}
               onClick={(e) => {
                 e.stopPropagation();
                 toggleMute();
@@ -129,7 +129,7 @@ const StemTrack = memo(({ type }: StemTrackProps) => {
           </div>
 
           {/* Grid visualization */}
-          <div className="flex gap-0.5 flex-1">
+          <div className="flex gap-0.5 flex-1 h-[32px]">
             {Array.from({ length: 32 }).map((_, i) => {
               const absolutePosition = i + (gridViewOffset * 32);
               const beatInLoop = absolutePosition >= loopStart && 
@@ -140,7 +140,7 @@ const StemTrack = memo(({ type }: StemTrackProps) => {
                 <motion.div
                   key={i}
                   className={cn(
-                    "h-4 flex-1",
+                    "h-full flex-1",
                     beatInLoop ? "bg-black/20" : "bg-black/5",
                     isMuted && "opacity-50"
                   )}
@@ -159,16 +159,16 @@ const StemTrack = memo(({ type }: StemTrackProps) => {
               e.stopPropagation();
               toggleLoopLength();
             }}
-            className="flex items-center gap-1 px-2 py-1 text-[10px] hover:opacity-70"
+            className="flex items-center gap-1 px-1 text-[10px] hover:opacity-70 flex-shrink-0"
           >
-            <span className="w-4 text-center">{loopLength}</span>
+            <span className="w-6 text-center">{loopLength}</span>
           </button>
         </div>
       </div>
 
       {/* Right margin control */}
       <button
-        className="w-12 flex items-center justify-center hover:bg-black/5"
+        className="w-8 md:w-12 flex items-center justify-center hover:bg-black/5"
         onClick={() => moveLoop(1)}
       >
         <ChevronRight className="w-4 h-4" />

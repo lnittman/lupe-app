@@ -25,7 +25,7 @@ export function Menu() {
     <div className="fixed top-0 right-0 p-4 z-50">
       <button 
         onClick={handleExit}
-        className="h-8 w-24 bg-black text-white flex items-center justify-center [border-radius:0] transition-colors hover:bg-black/90 font-mono text-sm"
+        className="h-8 w-24 bg-black text-white flex items-center justify-center [border-radius:0] transition-colors hover:bg-black/90 font-mono text-[10px]"
       >
         exit
       </button>

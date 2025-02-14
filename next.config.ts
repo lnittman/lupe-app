@@ -19,7 +19,9 @@ const nextConfig: NextConfig = {
           { key: 'Access-Control-Allow-Origin', value: '*' },
           { key: 'Access-Control-Allow-Methods', value: 'GET, POST, OPTIONS' },
           { key: 'Access-Control-Allow-Headers', value: '*' },
-          { key: 'Access-Control-Max-Age', value: '86400' }
+          { key: 'Access-Control-Max-Age', value: '86400' },
+          // Add viewport-fit=cover for PWA
+          { key: 'viewport', value: 'width=device-width, initial-scale=1, viewport-fit=cover' }
         ],
       }
     ];

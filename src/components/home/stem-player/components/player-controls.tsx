@@ -94,9 +94,9 @@ export const PlayerControls = memo(() => {
 
   return (
     <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-black">
-      <div className="p-4 flex justify-between">
+      <div className="p-3 flex justify-between">
         {/* Left corner - Play/Stop */}
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-1">
           <button
             onClick={() => {
               if (engine) {
@@ -120,9 +120,9 @@ export const PlayerControls = memo(() => {
         </div>
 
         {/* Right corner controls */}
-        <div className="flex gap-2">
+        <div className="flex gap-3">
           {/* BPM controls */}
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-1">
             <Input
               type="text"
               value={tempoBpm}
@@ -154,7 +154,7 @@ export const PlayerControls = memo(() => {
           </div>
 
           {/* Tap/Rate controls */}
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-1">
             <button
               onClick={handleTapTempo}
               className="h-8 w-24 bg-black text-white text-sm font-mono hover:bg-black/90 transition-colors"
