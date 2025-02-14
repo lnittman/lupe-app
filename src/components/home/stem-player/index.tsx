@@ -20,8 +20,9 @@ export const StemPlayer = memo(() => {
       animate={{ opacity: 1 }}
       className="min-h-screen flex flex-col"
     >
-      {/* Action Log */}
+      {/* Action Log 
       <ActionLog />
+*/}
 
       {/* Main content area with proper spacing */}
       <div className="flex-1 flex">
