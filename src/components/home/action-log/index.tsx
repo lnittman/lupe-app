@@ -41,7 +41,7 @@ export function ActionLog() {
   const actions = useAudioStore(state => state.actions);
 
   return (
-    <div className="fixed h-52 overflow-y-auto bg-white p-4 font-mono text-xs">
+    <div className="fixed h-48 overflow-y-auto bg-white p-4 font-mono text-xs">
       {actions.map((action) => (
         <motion.div
           key={action.id}
